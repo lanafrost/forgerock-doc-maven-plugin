@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/openidm/!svn/ver/998/trunk/src/main/docbkx-stylesheets/html
+END
+coredoc.xsl
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/openidm/!svn/ver/998/trunk/src/main/docbkx-stylesheets/html/coredoc.xsl
+END
+chunked.xsl
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/openidm/!svn/ver/938/trunk/src/main/docbkx-stylesheets/html/chunked.xsl
+END
