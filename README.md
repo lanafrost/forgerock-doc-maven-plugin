@@ -20,36 +20,37 @@ The project then runs two plugin executions:
 2.  A `layout` goal in the `site` phase to copy content under
     `site-doc`
 
-    <build>
-     <plugins>
-      <plugin>
-       <groupId>org.forgerock.commons</groupId>
-       <artifactId>doc-build-plugin</artifactId>
-       <version>0.0.1-SNAPSHOT</version>
-       <inherited>false</inherited>
-       <configuration>
-        <projectName>OpenAM</projectName>
-        <googleAnalyticsId>UA-23412190-7</googleAnalyticsId>
-       </configuration>
-       <executions>
-        <execution>
-         <id>build-doc</id>
-         <phase>pre-site</phase>
-         <goals>
-          <goal>build</goal>
-         </goals>
-        </execution>
-        <execution>
-         <id>layout-doc</id>
-         <phase>site</phase>
-         <goals>
-          <goal>layout</goal>
-         </goals>
-        </execution>
-       </executions>
-      </plugin>
-     </plugins>
-    </build>
+
+		<build>
+		 <plugins>
+		  <plugin>
+		   <groupId>org.forgerock.commons</groupId>
+		   <artifactId>doc-build-plugin</artifactId>
+		   <version>0.0.1-SNAPSHOT</version>
+		   <inherited>false</inherited>
+		   <configuration>
+		    <projectName>OpenAM</projectName>
+		    <googleAnalyticsId>UA-23412190-7</googleAnalyticsId>
+		   </configuration>
+		   <executions>
+		    <execution>
+		     <id>build-doc</id>
+		     <phase>pre-site</phase>
+		     <goals>
+		      <goal>build</goal>
+		     </goals>
+		    </execution>
+		    <execution>
+		     <id>layout-doc</id>
+		     <phase>site</phase>
+		     <goals>
+		      <goal>layout</goal>
+		     </goals>
+		    </execution>
+		   </executions>
+		  </plugin>
+		 </plugins>
+		</build>
 
 More to come...
 
