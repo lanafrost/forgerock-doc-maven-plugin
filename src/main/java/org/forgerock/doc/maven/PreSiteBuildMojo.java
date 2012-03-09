@@ -241,12 +241,18 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
   void renameDocument(File file, String docName)
       throws MojoExecutionException
   {
+
+
     String ext = FilenameUtils.getExtension(file.getName());
     String newName = file.getParent() + File.separator
         + DocUtils.renameDoc(projectName, docName, ext);
     try
     {
-      FileUtils.moveFile(file, new File(newName));
+      File newFile = new File(newName);
+      if (!newFile.exists())
+      {
+        FileUtils.moveFile(file, newFile);
+      }
     }
     catch (IOException e)
     {
