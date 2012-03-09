@@ -1,10 +1,24 @@
 # ForgeRock doc-build-plugin
 
-Today the configurations for ForgeRock core documentation are maintained
-in sync by copy/paste.
+As of early March 2012 the configurations for ForgeRock core documentation
+builds are maintained in sync by copy/paste. A better solution would centralize
+configuration, leaving only the source files and a small amount of
+configuration per core documentation project. A centralized configuration would
+ensure that output formats are formatted uniformly.
 
-A better solution would centralize configuration, leaving only the source
-files and a small amount of configuration per core documentation project.
+With centralized configuration handled by a Maven plugin, the core
+documentation-related project configuration takes at least two arguments:
+
+*   `<projectName>`: the short name for the project such as OpenAM, OpenDJ,
+    or OpenIDM
+*   `<googleAnalyticsId>` to add Google Analytics JavaScript to the HTML
+    output
+
+The project then runs two plugin executions:
+
+1.  A `build` goal in the `pre-site` phase to build and massage output
+2.  A `layout` goal in the `site` phase to copy content under
+    `site-doc`
 
     <build>
       <plugins>
