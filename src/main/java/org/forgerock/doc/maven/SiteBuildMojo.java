@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
@@ -89,8 +90,8 @@ public class SiteBuildMojo extends AbstractBuildMojo
 
       for (String docName : docNames)
       {
-        String epubDir = docbkxOutputDirectory.getPath().replaceAll(
-            File.separator, "/")
+        String epubDir = FilenameUtils.
+            separatorsToUnix(docbkxOutputDirectory.getPath())
             + "/epub/" + docName;
         r.add(
             element(name("resource"),
@@ -99,15 +100,15 @@ public class SiteBuildMojo extends AbstractBuildMojo
                 element(name("include"), "**/*.epub"))));
       }
 
-      String htmlDir = docbkxOutputDirectory.getPath().replaceAll(
-          File.separator, "/")
+      String htmlDir = FilenameUtils.
+          separatorsToUnix(docbkxOutputDirectory.getPath())
           + "/html/";
       r.add(
           element(name("resource"),
           element(name("directory"), htmlDir)));
 
-      String pdfDir = docbkxOutputDirectory.getPath().replaceAll(
-          File.separator, "/")
+      String pdfDir = FilenameUtils.
+          separatorsToUnix(docbkxOutputDirectory.getPath())
           + "/pdf/";
       r.add(
           element(name("resource"),
@@ -115,8 +116,8 @@ public class SiteBuildMojo extends AbstractBuildMojo
           element(name("includes"),
               element(name("include"), "**/*.pdf"))));
 
-      String rtfDir = docbkxOutputDirectory.getPath().replaceAll(
-          File.separator, "/")
+      String rtfDir = FilenameUtils.
+          separatorsToUnix(docbkxOutputDirectory.getPath())
           + "/rtf/";
       r.add(
           element( name("resource"),
@@ -137,9 +138,12 @@ public class SiteBuildMojo extends AbstractBuildMojo
      */
     public void layout() throws MojoExecutionException
     {
+      if (siteDirectory == null) {
+        throw new MojoExecutionException("<siteDirectory> must be set.");
+      }
 
-      String siteDocDirectory = siteDirectory.getPath().replaceAll(
-          File.separator, "/")
+      String siteDocDirectory = FilenameUtils
+          .separatorsToUnix(siteDirectory.getPath())
           + "/doc";
       executeMojo(
           plugin(

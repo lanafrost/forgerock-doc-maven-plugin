@@ -80,13 +80,13 @@ public class DocUtils
     }
 
     // Need trailing dash when version is not empty.
-    if (version != "")
+    if (!version.equalsIgnoreCase(""))
     {
       version = version + '-';
     }
 
     // Only add a . if the extension is not empty.
-    if (extension != "")
+    if (!extension.equalsIgnoreCase(""))
     {
       extension = "." + extension;
     }

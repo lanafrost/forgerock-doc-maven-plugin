@@ -589,8 +589,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
      */
     void prepareFOP() throws MojoExecutionException
     {
-      String fontsDir = fontsDirectory.getPath().replaceAll(
-          File.separator, "/");
+      String fontsDir = FilenameUtils
+          .separatorsToUnix(fontsDirectory.getPath());
       executeMojo(
           plugin(
               groupId("com.agilejava.docbkx"),
@@ -624,8 +624,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
       cfg.add(element(name("sectionLabelIncludesComponentLabel"),
           doesSectionLabelIncludeComponentLabel));
       cfg.add(element(name("xincludeSupported"), isXincludeSupported));
-      cfg.add(element(name("sourceDirectory"), docbkxSourceDirectory
-          .getPath().replaceAll(File.separator, "/")));
+      cfg.add(element(name("sourceDirectory"),
+          FilenameUtils.separatorsToUnix(docbkxSourceDirectory.getPath())));
 
       return cfg;
     }
@@ -646,8 +646,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     {
       ArrayList<MojoExecutor.Element> cfg = new ArrayList<MojoExecutor.Element>();
       cfg.add(element(name("xincludeSupported"), isXincludeSupported));
-      cfg.add(element(name("sourceDirectory"), docbkxSourceDirectory
-          .getPath().replaceAll(File.separator, "/")));
+      cfg.add(element(name("sourceDirectory"),
+          FilenameUtils.separatorsToUnix(docbkxSourceDirectory.getPath())));
 
       Set<String> docNames = DocUtils.getDocumentNames(
           docbkxSourceDirectory, documentSrcName);
@@ -661,8 +661,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
         cfg.add(element(name("includes"), docName + "/"
             + documentSrcName));
         cfg.add(element(name("collectXrefTargets"), "only"));
-        cfg.add(element(name("targetsFilename"), buildDirectory
-            .getPath().replaceAll(File.separator, "/")
+        cfg.add(element(name("targetsFilename"),
+            FilenameUtils.separatorsToUnix(buildDirectory.getPath())
             + "/"
             + docName + ".target.db"));
 
@@ -705,8 +705,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
       ArrayList<MojoExecutor.Element> cfg = new ArrayList<MojoExecutor.Element>();
       cfg.addAll(baseConfiguration);
       cfg.add(element(name("includes"), "*/" + documentSrcName));
-      cfg.add(element(name("epubCustomization"), epubCustomization
-          .getPath().replaceAll(File.separator, "/")));
+      cfg.add(element(name("epubCustomization"),
+          FilenameUtils.separatorsToUnix(epubCustomization.getPath())));
 
       // Copy images from source to build. DocBook XSL does not copy the
       // images, because XSL does not have a facility for copying files.
@@ -774,12 +774,11 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
 
       ArrayList<MojoExecutor.Element> cfg = new ArrayList<MojoExecutor.Element>();
       cfg.addAll(baseConfiguration);
-      cfg.add(element(name("foCustomization"), foCustomization
-          .getPath().replaceAll(File.separator, "/")));
+      cfg.add(element(name("foCustomization"),
+          FilenameUtils.separatorsToUnix(foCustomization.getPath())));
 
       // If you update this list, also see copyFonts().
-      String fontDir = fontsDirectory.getPath().replaceAll(
-          File.separator, "/");
+      String fontDir = FilenameUtils.separatorsToUnix(fontsDirectory.getPath());
       cfg.add(element(
           name("fonts"),
           element(
@@ -966,8 +965,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
       cfg.add(element(name("includes"), "*/" + documentSrcName));
       cfg.add(element(
           name("manpagesCustomization"),
-          manpagesCustomization.getPath().replaceAll(File.separator,
-              "/")));
+          FilenameUtils.separatorsToUnix(manpagesCustomization.getPath())));
 
       executeMojo(
           plugin(
@@ -996,10 +994,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
       cfg.addAll(baseConfiguration);
       cfg.add(element(name("includes"), "*/" + documentSrcName));
       cfg.add(element(name("chunkedOutput"), "false"));
-      cfg.add(element(
-          name("htmlCustomization"),
-          singleHTMLCustomization.getPath().replaceAll(
-              File.separator, "/")));
+      cfg.add(element(name("htmlCustomization"),
+          FilenameUtils.separatorsToUnix(singleHTMLCustomization.getPath())));
       cfg.add(element(name("targetDatabaseDocument"),
           getTargetDatabaseDocument()));
 
@@ -1059,10 +1055,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
       cfg.addAll(baseConfiguration);
       cfg.add(element(name("includes"), "*/" + documentSrcName));
       cfg.add(element(name("chunkedOutput"), "true"));
-      cfg.add(element(
-          name("htmlCustomization"),
-          chunkedHTMLCustomization.getPath().replaceAll(
-              File.separator, "/")));
+      cfg.add(element(name("htmlCustomization"),
+          FilenameUtils.separatorsToUnix(chunkedHTMLCustomization.getPath())));
 
       // Copy images from source to build. DocBook XSL does not copy the
       // images, because XSL does not have a facility for copying files.

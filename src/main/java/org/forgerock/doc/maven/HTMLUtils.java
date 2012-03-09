@@ -198,7 +198,7 @@ public class HTMLUtils
   public static List<File> addGoogleAnalytics(String baseDir,
       String id, String template) throws IOException
   {
-    template.replace("ANALYTICS-ID", id);
+    template = template.replace("ANALYTICS-ID", id);
     return updateHTML(baseDir, "</body>", template);
   }
 }
