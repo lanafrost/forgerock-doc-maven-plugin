@@ -20,11 +20,12 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011 ForgeRock AS
+  !      Copyright 2011-2012 ForgeRock AS
   !    
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
  version="1.0">
  <xsl:import href="urn:docbkx:stylesheet" />
  <xsl:param name="man.authors.section.enabled" select="0" />
+ <xsl:param name="refentry.date.profile.enabled" select="1" />
 </xsl:stylesheet>

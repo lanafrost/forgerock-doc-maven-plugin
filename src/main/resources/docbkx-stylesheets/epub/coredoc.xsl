@@ -20,12 +20,34 @@
   !
   ! CCPL HEADER END
   !
-  !      Copyright 2011 ForgeRock AS
+  !      Copyright 2011-2012 ForgeRock AS
   !    
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
  version="1.0">
  <xsl:import href="urn:docbkx:stylesheet" />
 
-<!--  <xsl:param name="epub.embedded.fonts">TODO... DejaVuSerif.otf,DejaVuSerif-Italic.otf, etc.</xsl:param> -->
+ <xsl:param name="html.longdesc" select="0" /> 
+ <xsl:param name="variablelist.term.separator"></xsl:param>
+ <xsl:param name="variablelist.term.break.after">1</xsl:param>
+ <xsl:param name="generate.toc">
+  appendix  nop
+  article/appendix  nop
+  article   nop
+  book      toc,title
+  chapter   nop
+  part      toc,title
+  preface   nop
+  qandadiv  nop
+  qandaset  nop
+  reference toc,title
+  sect1     nop
+  sect2     nop
+  sect3     nop
+  sect4     nop
+  sect5     nop
+  section   nop
+  set       toc,title
+ </xsl:param>
+ <xsl:param name="toc.section.depth" select="0" />
 </xsl:stylesheet>
