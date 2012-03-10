@@ -52,6 +52,17 @@ The project then runs two plugin executions:
 		 </plugins>
 		</build>
 
+To exclude formats from the build, you can use the optional
+`<excludes>` configuration element. The following example
+excludes all formats but HTML from the build.
+
+     <excludes>
+      <exclude>epub</exclude>
+      <exclude>man</exclude>
+      <exclude>pdf</exclude>
+      <exclude>rtf</exclude>
+     </excludes>
+
 More to come...
 
 * * *

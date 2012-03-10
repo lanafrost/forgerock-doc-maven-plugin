@@ -88,42 +88,54 @@ public class SiteBuildMojo extends AbstractBuildMojo
         throw new MojoExecutionException("No document names found.");
       }
 
-      for (String docName : docNames)
+      if (!excludes.isEmpty() && !excludes.contains("epub"))
       {
-        String epubDir = FilenameUtils.
-            separatorsToUnix(docbkxOutputDirectory.getPath())
-            + "/epub/" + docName;
-        r.add(
-            element(name("resource"),
-            element(name("directory"), epubDir),
-            element(name("includes"),
-                element(name("include"), "**/*.epub"))));
+        for (String docName : docNames)
+        {
+          String epubDir = FilenameUtils.
+              separatorsToUnix(docbkxOutputDirectory.getPath())
+              + "/epub/" + docName;
+          r.add(
+              element(name("resource"),
+                  element(name("directory"), epubDir),
+                  element(name("includes"),
+                      element(name("include"), "**/*.epub"))));
+        }
       }
 
-      String htmlDir = FilenameUtils.
-          separatorsToUnix(docbkxOutputDirectory.getPath())
-          + "/html/";
-      r.add(
-          element(name("resource"),
-          element(name("directory"), htmlDir)));
+      if (!excludes.isEmpty() && !excludes.contains("html"))
+      {
+        String htmlDir = FilenameUtils.
+            separatorsToUnix(docbkxOutputDirectory.getPath())
+            + "/html/";
+        r.add(
+            element(name("resource"),
+                element(name("directory"), htmlDir)));
+      }
 
-      String pdfDir = FilenameUtils.
-          separatorsToUnix(docbkxOutputDirectory.getPath())
-          + "/pdf/";
-      r.add(
-          element(name("resource"),
-          element(name("directory"), pdfDir),
-          element(name("includes"),
-              element(name("include"), "**/*.pdf"))));
+      if (!excludes.isEmpty() && !excludes.contains("pdf"))
+      {
+        String pdfDir = FilenameUtils.
+            separatorsToUnix(docbkxOutputDirectory.getPath())
+            + "/pdf/";
+        r.add(
+            element(name("resource"),
+                element(name("directory"), pdfDir),
+                element(name("includes"),
+                    element(name("include"), "**/*.pdf"))));
+      }
 
-      String rtfDir = FilenameUtils.
-          separatorsToUnix(docbkxOutputDirectory.getPath())
-          + "/rtf/";
-      r.add(
-          element( name("resource"),
-          element(name("directory"), rtfDir),
-          element(name("includes"),
-              element(name("include"), "**/*.rtf"))));
+      if (!excludes.isEmpty() && !excludes.contains("rtf"))
+      {
+        String rtfDir = FilenameUtils.
+            separatorsToUnix(docbkxOutputDirectory.getPath())
+            + "/rtf/";
+        r.add(
+            element( name("resource"),
+                element(name("directory"), rtfDir),
+                element(name("includes"),
+                    element(name("include"), "**/*.rtf"))));
+      }
 
       return element("resources", r.toArray(new Element[0]));
     }

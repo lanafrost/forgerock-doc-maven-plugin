@@ -21,6 +21,7 @@ package org.forgerock.doc.maven;
 
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -43,7 +44,7 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected final String resourcesVersion = "2.5"; // FIXME!
 
   /**
-   * Short name of the project, such as OpenAM, OpenDJ, OpenIDM
+   * Short name of the project, such as OpenAM, OpenDJ, OpenIDM.
    *
    * @parameter expression="${projectName}"
    * @required
@@ -51,7 +52,7 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected String projectName;
 
   /**
-   * Google Analytics identifier for the project
+   * Google Analytics identifier for the project.
    *
    * @parameter expression="${googleAnalyticsId}"
    * @required
@@ -59,7 +60,14 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected String googleAnalyticsId;
 
   /**
-   * Base directory for DocBook XML source files
+   * Do not process these formats. Choices include: epub, html, man, pdf, rtf.
+   *
+   * @parameter
+   */
+  protected List<String> excludes;
+
+  /**
+   * Base directory for DocBook XML source files.
    *
    * @parameter default-value="${basedir}/src/main/docbkx"
    *            expression="${docbkxSourceDirectory}"
@@ -68,7 +76,7 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected File docbkxSourceDirectory;
 
   /**
-   * Base directory for built documentation
+   * Base directory for built documentation.
    *
    * @parameter default-value="${project.build.directory}/docbkx"
    *            expression="${docbkxOutputDirectory}"
@@ -85,7 +93,7 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected File buildDirectory;
 
   /**
-   * The Maven Project Object
+   * The Maven Project Object.
    *
    * @parameter expression="${project}"
    * @required
@@ -94,7 +102,7 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected MavenProject project;
 
   /**
-   * The Maven Session Object
+   * The Maven Session Object.
    *
    * @parameter expression="${session}"
    * @required
@@ -103,7 +111,7 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected MavenSession session;
 
   /**
-   * The Maven PluginManager Object
+   * The Maven PluginManager Object.
    *
    * @component
    * @required

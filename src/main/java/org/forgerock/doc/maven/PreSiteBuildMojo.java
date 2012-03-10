@@ -75,35 +75,52 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     getLog().info("Preparing Olink DB files...");
     exec.buildOlinkDB(baseConf);
 
+    if (!excludes.isEmpty()) getLog().debug("EXCLUDES: " + excludes);
+
     // Build and prepare EPUB for publishing.
-    getLog().info("Building EPUB...");
-    exec.buildEPUB(baseConf);
-    postProcessEPUB(docbkxOutputDirectory.getPath() + File.separator
-        + "epub");
+    if (!excludes.isEmpty() && !excludes.contains("epub"))
+    {
+      getLog().info("Building EPUB...");
+      exec.buildEPUB(baseConf);
+      postProcessEPUB(docbkxOutputDirectory.getPath() + File.separator
+          + "epub");
+    }
 
     // Build and prepare PDF for publishing.
-    getLog().info("Building PDF...");
-    exec.buildPDF(baseConf);
-    postProcessPDF(docbkxOutputDirectory.getPath() + File.separator
-        + "pdf");
+    if (!excludes.isEmpty() && !excludes.contains("pdf"))
+    {
+      getLog().info("Building PDF...");
+      exec.buildPDF(baseConf);
+      postProcessPDF(docbkxOutputDirectory.getPath() + File.separator
+          + "pdf");
+    }
 
     // Build and prepare RTF for publishing.
-    getLog().info("Building RTF...");
-    exec.buildRTF(baseConf);
-    postProcessRTF(docbkxOutputDirectory.getPath() + File.separator
-        + "rtf");
+    if (!excludes.isEmpty() && !excludes.contains("rtf"))
+    {
+      getLog().info("Building RTF...");
+      exec.buildRTF(baseConf);
+      postProcessRTF(docbkxOutputDirectory.getPath() + File.separator
+          + "rtf");
+    }
 
     // Build and prepare man pages for publishing.
-    getLog().info("Building man pages...");
-    exec.buildManpages(baseConf);
+    if (!excludes.isEmpty() && !excludes.contains("man"))
+    {
+      getLog().info("Building man pages...");
+      exec.buildManpages(baseConf);
+    }
 
     // Build and prepare HTML for publishing.
-    getLog().info("Building single HTML pages...");
-    exec.buildSingleHTML(baseConf);
-    getLog().info("Building chunked HTML pages...");
-    exec.buildChunkedHTML(baseConf);
-    postProcessHTML(docbkxOutputDirectory.getPath() + File.separator
-        + "html");
+    if (!excludes.isEmpty() && !excludes.contains("html"))
+    {
+      getLog().info("Building single HTML pages...");
+      exec.buildSingleHTML(baseConf);
+      getLog().info("Building chunked HTML pages...");
+      exec.buildChunkedHTML(baseConf);
+      postProcessHTML(docbkxOutputDirectory.getPath() + File.separator
+          + "html");
+    }
   }
 
 
