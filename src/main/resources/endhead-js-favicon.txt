@@ -32,4 +32,5 @@ $(".flat").live("dblclick", function() {
     "</div>");
 });
 </script>
-<head>
+<link rel="shortcut icon" href="http://forgerock.org/favicon.ico">
+</head>

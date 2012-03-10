@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -75,10 +76,13 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     getLog().info("Preparing Olink DB files...");
     exec.buildOlinkDB(baseConf);
 
-    if (!excludes.isEmpty()) getLog().debug("EXCLUDES: " + excludes);
+    if (getExcludes() == null)
+    {
+      setExcludes(new ArrayList<String>());
+    }
 
     // Build and prepare EPUB for publishing.
-    if (!excludes.isEmpty() && !excludes.contains("epub"))
+    if (getExcludes().isEmpty() || !getExcludes().contains("epub"))
     {
       getLog().info("Building EPUB...");
       exec.buildEPUB(baseConf);
@@ -87,7 +91,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     }
 
     // Build and prepare PDF for publishing.
-    if (!excludes.isEmpty() && !excludes.contains("pdf"))
+    if (getExcludes().isEmpty() || !getExcludes().contains("pdf"))
     {
       getLog().info("Building PDF...");
       exec.buildPDF(baseConf);
@@ -96,7 +100,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     }
 
     // Build and prepare RTF for publishing.
-    if (!excludes.isEmpty() && !excludes.contains("rtf"))
+    if (getExcludes().isEmpty() || !getExcludes().contains("rtf"))
     {
       getLog().info("Building RTF...");
       exec.buildRTF(baseConf);
@@ -105,14 +109,14 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     }
 
     // Build and prepare man pages for publishing.
-    if (!excludes.isEmpty() && !excludes.contains("man"))
+    if (getExcludes().isEmpty() || !getExcludes().contains("man"))
     {
       getLog().info("Building man pages...");
       exec.buildManpages(baseConf);
     }
 
     // Build and prepare HTML for publishing.
-    if (!excludes.isEmpty() && !excludes.contains("html"))
+    if (getExcludes().isEmpty() || !getExcludes().contains("html"))
     {
       getLog().info("Building single HTML pages...");
       exec.buildSingleHTML(baseConf);
@@ -475,22 +479,22 @@ public class PreSiteBuildMojo extends AbstractBuildMojo
     try
     {
       getLog().info("Editing built HTML...");
+      HashMap<String,String> replacements = new HashMap<String,String>();
+
       String doctype = IOUtils.toString(getClass()
           .getResourceAsStream("/starthtml-doctype.txt"), "UTF-8");
-      HTMLUtils.addDoctype(htmlDir, doctype);
+      replacements.put("<html>", doctype);
 
       String javascript = IOUtils.toString(getClass()
-          .getResourceAsStream("/endhead-js.txt"), "UTF-8");
-      HTMLUtils.addJavaScript(htmlDir, javascript);
-
-      String favicon = IOUtils.toString(getClass()
-          .getResourceAsStream("/endhead-favicon.txt"), "UTF-8");
-      HTMLUtils.addFavicon(htmlDir, favicon);
+          .getResourceAsStream("/endhead-js-favicon.txt"), "UTF-8");
+      replacements.put("</head>", javascript);
 
       String gascript = IOUtils.toString(getClass()
           .getResourceAsStream("/endbody-ga.txt"), "UTF-8");
-      HTMLUtils.addGoogleAnalytics(htmlDir, googleAnalyticsId,
-          gascript);
+      gascript = gascript.replace("ANALYTICS-ID", googleAnalyticsId);
+      replacements.put("</body>", gascript);
+
+      HTMLUtils.updateHTML(htmlDir, replacements);
 
       getLog().info("Adding CSS...");
       File css = new File(buildDirectory.getPath() + File.separator

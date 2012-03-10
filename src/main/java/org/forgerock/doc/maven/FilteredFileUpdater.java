@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.FileUtils;
@@ -33,40 +34,33 @@ import org.apache.commons.io.FileUtils;
 
 
 /**
- * Update matching files in all directories, replacing the first occurence of
+ * Update matching files in all directories, replacing the first occurrence of
  * the string to replace with the replacement string. Files are expected to be
  * UTF-8 encoded.
  */
 public class FilteredFileUpdater extends DirectoryWalker<File>
 {
   /**
-   * String to match and replace
+   * Replacements to apply. The keys are the strings to replace, the values
+   * are the replacements.
    */
-  private final String stringToReplace;
-
-  /**
-   * The text to replace the string
-   */
-  private final String replacementString;
+  private final Map<String,String> replacements;
 
 
 
   /**
    * {@inheritDoc}
    *
-   * @param stringToReplace
-   *          String to replace in matching files
-   * @param replacementString
-   *          Replace the string with this
+   * @param replacements
+   *          Keys are strings to replace. Values are replacements.
    * @param filterToMatch
    *          Update files matching this filter
    */
-  public FilteredFileUpdater(String stringToReplace,
-      String replacementString, FileFilter filterToMatch)
+  public FilteredFileUpdater(Map<String,String> replacements,
+      FileFilter filterToMatch)
   {
     super(filterToMatch, -1);
-    this.stringToReplace = stringToReplace;
-    this.replacementString = replacementString;
+    this.replacements = replacements;
   }
 
 
@@ -104,8 +98,11 @@ public class FilteredFileUpdater extends DirectoryWalker<File>
   {
     if (file.isFile())
     {
-      String data = FileUtils.readFileToString(file, "UTF-8")
-          .replace(stringToReplace, replacementString);
+      String data = FileUtils.readFileToString(file, "UTF-8");
+
+      for (String key : replacements.keySet()) {
+        data = data.replace(key, replacements.get(key));
+      }
 
       FileUtils.deleteQuietly(file);
       FileUtils.writeStringToFile(file, data, "UTF-8");

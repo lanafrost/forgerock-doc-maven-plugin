@@ -67,6 +67,22 @@ abstract class AbstractBuildMojo extends AbstractMojo
   protected List<String> excludes;
 
   /**
+   * Return the list of formats not to process.
+   *
+   * @return Formats not to process (choices: epub, html, man, pdf, rtf)
+   */
+  public List<String> getExcludes() {
+    return excludes;
+  }
+
+  /**
+   * Set the list of formats not to process (epub, html, man, pdf, rtf).
+   */
+  public void setExcludes(List<String> excludes) {
+    this.excludes = excludes;
+  }
+
+  /**
    * Base directory for DocBook XML source files.
    *
    * @parameter default-value="${basedir}/src/main/docbkx"

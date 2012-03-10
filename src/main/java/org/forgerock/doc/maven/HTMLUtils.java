@@ -25,6 +25,7 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
@@ -99,16 +100,14 @@ public class HTMLUtils
    *
    * @param baseDir
    *          Base directory under which to find HTML files recursively
-   * @param tagToReplace
-   *          Tag to replace in HTML
-   * @param replacement
-   *          Content used to replace tag. Includes tag itself.
+   * @param replacements Keys are tags to replace. Values are replacements,
+   *                     including the original tag.
    * @return List of files updated
    * @throws IOException
    *           Something went wrong reading or writing files.
    */
-  static List<File> updateHTML(String baseDir, String tagToReplace,
-      String replacement) throws IOException
+  static List<File> updateHTML(String baseDir, Map<String,
+      String> replacements) throws IOException
   {
     // Match normal directories, and HTML files.
     IOFileFilter dirFilter = FileFilterUtils.and(
@@ -119,86 +118,7 @@ public class HTMLUtils
         FileFilterUtils.suffixFileFilter(".html"));
     FileFilter filter = FileFilterUtils.or(dirFilter, fileFilter);
 
-    FilteredFileUpdater ffu = new FilteredFileUpdater(tagToReplace,
-        replacement, filter);
+    FilteredFileUpdater ffu = new FilteredFileUpdater(replacements, filter);
     return ffu.update(new File(baseDir));
-  }
-
-
-
-  /**
-   * Add DOCTYPE declaration to HTML files.
-   *
-   * @param baseDir
-   *          Base directory under which to find HTML files recursively
-   * @param template
-   *          DOCTYPE declaration + HTML start tag to replace existing HTML
-   *          start tag
-   * @return HTML files updated
-   * @throws IOException
-   *           Something went wrong reading or writing files.
-   */
-  public static List<File> addDoctype(String baseDir, String template)
-      throws IOException
-  {
-    return updateHTML(baseDir, "<html>", template);
-  }
-
-
-
-  /**
-   * Add JavaScript before &lt;/head&gt; in HTML files.
-   *
-   * @param baseDir
-   *          Base directory under which to find HTML files recursively
-   * @param template
-   *          JavaScript + HEAD end tag to replace existing HEAD end tag
-   * @throws IOException
-   *           Something went wrong reading or writing files.
-   */
-  public static List<File> addJavaScript(String baseDir,
-      String template) throws IOException
-  {
-    return updateHTML(baseDir, "</head>", template);
-  }
-
-
-
-  /**
-   * Add favicon link before &lt;/head&gt; in HTML files.
-   *
-   * @param baseDir
-   *          Base directory under which to find HTML files recursively
-   * @param template
-   *          Favicon link + HEAD end tag to replace existing HEAD end tag
-   * @throws IOException
-   *           Something went wrong reading or writing files.
-   */
-  public static List<File> addFavicon(String baseDir, String template)
-      throws IOException
-  {
-    return updateHTML(baseDir, "</head>", template);
-  }
-
-
-
-  /**
-   * Add Google Analytics script before &lt;/body&gt; in HTML files.
-   *
-   * @param baseDir
-   *          Base directory under which to find HTML files recursively
-   * @param id
-   *          Google Analytics ID for the project
-   * @param template
-   *          Google Analytics script template with ANALYTICS-ID in place of the
-   *          actual ID + BODY end tag to replace existing BODY end tag
-   * @throws IOException
-   *           Something went wrong reading or writing files.
-   */
-  public static List<File> addGoogleAnalytics(String baseDir,
-      String id, String template) throws IOException
-  {
-    template = template.replace("ANALYTICS-ID", id);
-    return updateHTML(baseDir, "</body>", template);
   }
 }

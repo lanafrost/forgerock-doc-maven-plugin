@@ -88,7 +88,12 @@ public class SiteBuildMojo extends AbstractBuildMojo
         throw new MojoExecutionException("No document names found.");
       }
 
-      if (!excludes.isEmpty() && !excludes.contains("epub"))
+      if (getExcludes() == null)
+      {
+        setExcludes(new ArrayList<String>());
+      }
+
+      if (getExcludes().isEmpty() || !getExcludes().contains("epub"))
       {
         for (String docName : docNames)
         {
@@ -103,7 +108,7 @@ public class SiteBuildMojo extends AbstractBuildMojo
         }
       }
 
-      if (!excludes.isEmpty() && !excludes.contains("html"))
+      if (getExcludes().isEmpty() || !getExcludes().contains("html"))
       {
         String htmlDir = FilenameUtils.
             separatorsToUnix(docbkxOutputDirectory.getPath())
@@ -113,7 +118,7 @@ public class SiteBuildMojo extends AbstractBuildMojo
                 element(name("directory"), htmlDir)));
       }
 
-      if (!excludes.isEmpty() && !excludes.contains("pdf"))
+      if (getExcludes().isEmpty() || !getExcludes().contains("pdf"))
       {
         String pdfDir = FilenameUtils.
             separatorsToUnix(docbkxOutputDirectory.getPath())
@@ -125,7 +130,7 @@ public class SiteBuildMojo extends AbstractBuildMojo
                     element(name("include"), "**/*.pdf"))));
       }
 
-      if (!excludes.isEmpty() && !excludes.contains("rtf"))
+      if (getExcludes().isEmpty() || !getExcludes().contains("rtf"))
       {
         String rtfDir = FilenameUtils.
             separatorsToUnix(docbkxOutputDirectory.getPath())
