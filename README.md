@@ -1,4 +1,4 @@
-# ForgeRock doc-build-plugin
+# ForgeRock Doc Build Maven Plugin
 
 As of early March 2012 the configurations for ForgeRock core documentation
 builds are maintained in sync by copy/paste. A better solution would centralize
@@ -25,8 +25,8 @@ The project then runs two plugin executions:
 		 <plugins>
 		  <plugin>
 		   <groupId>org.forgerock.commons</groupId>
-		   <artifactId>doc-build-plugin</artifactId>
-		   <version>0.0.1-SNAPSHOT</version>
+		   <artifactId>forgerock-doc-maven-plugin</artifactId>
+		   <version>0.1.0-SNAPSHOT</version>
 		   <inherited>false</inherited>
 		   <configuration>
 		    <projectName>OpenAM</projectName>

@@ -57,7 +57,7 @@ public class SiteBuildMojo extends AbstractBuildMojo
   public void execute() throws MojoExecutionException
   {
     Executor exec = new Executor();
-    getLog().info("doc-build-plugin: Laying out site...");
+    getLog().info("Laying out site...");
     exec.layout();
   }
 
