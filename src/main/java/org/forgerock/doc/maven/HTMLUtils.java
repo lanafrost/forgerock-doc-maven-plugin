@@ -18,8 +18,6 @@
 
 package org.forgerock.doc.maven;
 
-
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
@@ -27,37 +25,37 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 
-
-
 /**
  * Utility methods to prepare built HTML docs for publication.
  */
-public class HTMLUtils
-{
+public final class HTMLUtils {
   /**
-   * Add a <code>.htaccess</code> file to each directory for publication on an
-   * Apache HTTPD server.
+   * Add a <code>.htaccess</code> file to the base directory, for publication on
+   * an Apache HTTPD server.
+   * <p>
+   * According to Apache documentation on <a
+   * href="http://httpd.apache.org/docs/2.4/howto/htaccess.html#how">How
+   * directives are applied</a>, "The configuration directives found in a
+   * .htaccess file are applied to the directory in which the .htaccess file is
+   * found, and to all subdirectories thereof." So there is no need to copy the
+   * file recursively to all directories.
    *
    * @param baseDir
-   *          Base directory under which to add files recursively
+   *          Base directory under which to add the file
    * @param htaccess
    *          <code>.htaccess</code> file to copy
-   * @return Directories to which the file was copied
    * @throws IOException
    *           Something went wrong during copy procedure.
    */
-  public static List<File> addHtaccess(String baseDir, File htaccess)
-      throws IOException
-  {
-    RecursiveFileCopier rcf = new RecursiveFileCopier(htaccess);
-    return rcf.add(new File(baseDir));
+  public static void addHtaccess(final String baseDir, final File htaccess)
+      throws IOException {
+    FileUtils.copyFileToDirectory(htaccess, new File(baseDir));
   }
-
-
 
   /**
    * Add <code>css/coredoc.css</code> in each subdirectory containing document
@@ -76,43 +74,37 @@ public class HTMLUtils
    * @throws IOException
    *           Something went wrong during copy procedure.
    */
-  public static List<File> addCss(String baseDir, File cssFile,
-      final String entryPoint) throws IOException
-  {
-    FilenameFilter filter = new FilenameFilter()
-    {
+  public static List<File> addCss(final String baseDir, final File cssFile,
+      final String entryPoint) throws IOException {
+    FilenameFilter filter = new FilenameFilter() {
       @Override
-      public boolean accept(File dir, String name)
-      {
+      public boolean accept(final File dir, final String name) {
         return name.endsWith(entryPoint);
       }
     };
 
-    FilteredRecursiveFileCopier frfc = new FilteredRecursiveFileCopier(
-        cssFile, filter, "css");
+    FilteredRecursiveFileCopier frfc = new FilteredRecursiveFileCopier(cssFile,
+        filter, "css");
     return frfc.add(new File(baseDir));
   }
-
-
 
   /**
    * Replace an HTML tag with content from a template file.
    *
    * @param baseDir
    *          Base directory under which to find HTML files recursively
-   * @param replacements Keys are tags to replace. Values are replacements,
-   *                     including the original tag.
+   * @param replacements
+   *          Keys are tags to replace. Values are replacements, including the
+   *          original tag.
    * @return List of files updated
    * @throws IOException
    *           Something went wrong reading or writing files.
    */
-  static List<File> updateHTML(String baseDir, Map<String,
-      String> replacements) throws IOException
-  {
+  static List<File> updateHTML(final String baseDir,
+      final Map<String, String> replacements) throws IOException {
     // Match normal directories, and HTML files.
     IOFileFilter dirFilter = FileFilterUtils.and(
-        FileFilterUtils.directoryFileFilter(),
-        HiddenFileFilter.VISIBLE);
+        FileFilterUtils.directoryFileFilter(), HiddenFileFilter.VISIBLE);
     IOFileFilter fileFilter = FileFilterUtils.and(
         FileFilterUtils.fileFileFilter(),
         FileFilterUtils.suffixFileFilter(".html"));
@@ -120,5 +112,11 @@ public class HTMLUtils
 
     FilteredFileUpdater ffu = new FilteredFileUpdater(replacements, filter);
     return ffu.update(new File(baseDir));
+  }
+
+  /**
+   * Not used.
+   */
+  private HTMLUtils() {
   }
 }
