@@ -26,7 +26,7 @@ You call the plugin from your `pom.xml` as follows.
 		  <plugin>
 		   <groupId>org.forgerock.commons</groupId>
 		   <artifactId>forgerock-doc-maven-plugin</artifactId>
-		   <version>0.5.0-SNAPSHOT</version>
+		   <version>0.6.0-SNAPSHOT</version>
 		   <inherited>false</inherited>
 		   <configuration>
 		    <projectName>OpenAM</projectName>
@@ -118,6 +118,14 @@ those in your Maven site.
 
 The plugin also adds a `.htaccess` file under `target/site/doc` indicating to
 Apache HTTPD server to compress text files like HTML and CSS.
+
+## Release Layout
+
+You can add a `release` goal to the site phase execution to prepare a version
+for release on docs.forgerock.org. After you add the release goal, be sure to
+turn off draft mode and add a release version.
+
+     mvn clean site -DisDraftMode=no -DreleaseVersion=1.0.0
 
 * * *
 This work is licensed under the Creative Commons
