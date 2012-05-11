@@ -27,7 +27,7 @@ POM property called `gaId`, whose value is the Google Analytics ID.
 		  <plugin>
 		   <groupId>org.forgerock.commons</groupId>
 		   <artifactId>forgerock-doc-maven-plugin</artifactId>
-		   <version>1.0.1-SNAPSHOT</version>
+		   <version>1.1.0-SNAPSHOT</version>
 		   <inherited>false</inherited>
 		   <configuration>
 		    <projectName>MyProject</projectName>
@@ -130,6 +130,30 @@ ID using the property.
 
      mvn -DisDraftMode=no -DreleaseVersion=1.0.0 -D"gaId=UA-23412190-14" \
      clean site org.forgerock.commons:forgerock-doc-maven-plugin:release
+
+## Notes on Syntax Highlighting
+
+Uses [SyntaxHighlighter](http://alexgorbatchev.com/SyntaxHighlighter/) 3.0.83,
+rather than DocBook's syntax highlighting capabilities for HTML output, as
+SyntaxHighlighter includes handy features for selecting and numbering lines
+in HTML.
+
+	 Source			SyntaxHighlighter	Brush Name
+	 ---			---					---
+	 aci			aci					shBrushAci.js
+	 csv			csv					shBrushCsv.js
+	 html			html				shBrushXml.js
+	 http			http				shBrushHttp.js
+	 ini			ini					shBrushProperties.js
+	 java			java				shBrushJava.js
+	 javascript		javascript			shBrushJScript.js
+	 ldif			ldif				shBrushLDIF.js
+	 none			plain				shBrushPlain.js
+	 shell			shell				shBrushBash.js
+	 xml			xml					shBrushXml.js
+
+Brush support for `aci`, `csv`, `http`, `ini`, and `ldif` is provided by
+[a fork of SyntaxHighlighter](https://github.com/markcraig/SyntaxHighlighter).
 
 * * *
 This work is licensed under the Creative Commons

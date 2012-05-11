@@ -1,6 +1,4 @@
 /*
- * CCPL HEADER START
- *
  * This work is licensed under the Creative Commons
  * Attribution-NonCommercial-NoDerivs 3.0 Unported License.
  * To view a copy of this license, visit
@@ -17,10 +15,8 @@
  * enclosed by brackets "[]" replaced with your own identifying information:
  *     Portions Copyright [yyyy] [name of copyright owner]
  *
- * CCPL HEADER END
- *
  *     Copyright 2011-2012 ForgeRock AS
- *    
+ *
 */
 
 html
@@ -194,7 +190,8 @@ div.warning {
 div.appendix,
 div.chapter,
 div.index,
-div.preface {
+div.preface,
+div.refentry {
   border-bottom: thin solid #ccc;
 }
 
@@ -238,9 +235,6 @@ div.variablelist-title
   font-weight: bold;
 }
 
-div.programlisting,
-div.flat,
-div.screen,
 div.synopsis {
   background-color: #fff;
   border: thin dashed #ccc;
@@ -251,14 +245,9 @@ div.synopsis {
   white-space: pre;
 }
 
-div.flat,
-div.screen {
-  text-indent: -18px;
-}
-
 .toggle {
   position: relative;
-  left: -40px;
+  left: -24px;
   float: left;
 }
 
