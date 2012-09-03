@@ -322,7 +322,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
 
             for (String docName : docNames) {
                 String sysId = getBuildDirectory().getAbsolutePath()
-                        + File.separator + docName + "single.target.db";
+                        + File.separator + docName + "-single.target.db";
                 content.append("<!ENTITY " + docName + " SYSTEM '" + sysId
                         + "'>\n");
             }
@@ -394,7 +394,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
 
             for (String docName : docNames) {
                 String sysId = getBuildDirectory().getAbsolutePath()
-                        + File.separator + docName + "chunked.target.db";
+                        + File.separator + docName + "-chunked.target.db";
                 content.append("<!ENTITY " + docName + " SYSTEM '" + sysId
                         + "'>\n");
             }
@@ -466,10 +466,11 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                     .getResourceAsStream("/endhead-js-favicon.txt"), "UTF-8");
             replacements.put("</head>", javascript);
 
+            String linkToJira = getLinkToJira();
             String gascript = IOUtils.toString(
                     getClass().getResourceAsStream("/endbody-ga.txt"), "UTF-8");
             gascript = gascript.replace("ANALYTICS-ID", getGoogleAnalyticsId());
-            replacements.put("</body>", gascript);
+            replacements.put("</body>", linkToJira + "\n" + gascript);
 
             HTMLUtils.updateHTML(htmlDir, replacements);
 
@@ -485,6 +486,50 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             throw new MojoExecutionException(
                     "Failed to update output HTML correctly: " + e.getMessage());
         }
+    }
+
+    /**
+     * Return a &lt;p&gt; containing a link to log a bug in Jira. The string
+     * is not localized.
+     * @return &lt;p&gt; containing a link to log a bug in Jira
+     */
+    final String getLinkToJira() {
+        String link = "<p>&nbsp;</p><div id=\"footer\"><p>Something wrong on this page? "
+                + "<a href=\"JIRA-URL\">Log a documentation bug.</a></p></div>";
+
+        // https://confluence.atlassian.com/display/JIRA/Creating+Issues+via+direct+HTML+links
+        String jiraURL = "";
+        if (getProjectName().equalsIgnoreCase("OpenAM")) {
+            jiraURL = "https://bugster.forgerock.org/jira/secure/CreateIssue.jspa?"
+                    + "pid=10000&components=10007&issuetype=1";
+        }
+        if (getProjectName().equalsIgnoreCase("OpenDJ")) {
+            jiraURL = "https://bugster.forgerock.org/jira/secure/CreateIssue.jspa?"
+                    + "pid=10040&components=10132&issuetype=1";
+        }
+        if (getProjectName().equalsIgnoreCase("OpenICF")) {
+            jiraURL = "https://bugster.forgerock.org/jira/secure/CreateIssue.jspa?"
+                    + "pid=10041&components=10170&issuetype=1";
+        }
+        if (getProjectName().equalsIgnoreCase("OpenIDM")) {
+            jiraURL = "https://bugster.forgerock.org/jira/secure/CreateIssue.jspa?"
+                    + "pid=10020&components=10164&issuetype=1";
+        }
+        if (getProjectName().equalsIgnoreCase("OpenIG")) {
+            jiraURL = "https://bugster.forgerock.org/jira/secure/CreateIssue.jspa?"
+                    + "pid=10060&components=10220&issuetype=1";
+        }
+        if (getProjectName().equalsIgnoreCase("ForgeRock")) { // Just testing
+            jiraURL = "https://bugster.forgerock.org/jira/secure/CreateIssue.jspa?"
+                    + "pid=10010&issuetype=1";
+        }
+
+        if (jiraURL.equals("")) {
+            link = "";
+        } else {
+            link = link.replaceFirst("JIRA-URL", jiraURL);
+        }
+        return link;
     }
 
     /**
@@ -1010,7 +1055,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                                 .getPath())
                                 + "/"
                                 + docName
-                                + "single.target.db"));
+                                + "-single.target.db"));
 
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
@@ -1122,7 +1167,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                                 .getPath())
                                 + "/"
                                 + docName
-                                + "chunked.target.db"));
+                                + "-chunked.target.db"));
 
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
