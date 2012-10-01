@@ -19,11 +19,50 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Utility methods to work with documents.
  */
 public final class DocUtils {
+    /**
+     * Pattern to validate the document names.
+     * <p/>
+     * <p> <br>Valid names:</p>
+     * <ul>
+     *     <li>guide</li>
+     *     <li>admin-quide</li>
+     *     <li>OpenTEST-guide</li>
+     *     <li>OpenTEST-admin-guide</li>
+     *     <li>OpenTEST-admin-guide-1.1.1.0</li>
+     *     <li>OpenTEST-admin-guide-1.1.1.0-SNAPSHOT</li>
+     *     <li>OpenTEST-admin-guide-1.1.1.0-express</li>
+     *     <li>OpenTEST-admin-guide-1.1.1.0-Xpress</li>
+     *     <li>OpenTEST-admin-guide-1.1.1.0-Xpress1</li>
+     *     <li>OpenTEST-10.1.0-admin-guide</li>
+     *     <li>OpenTEST-10.1.0-SNAPSHOT-admin-guide</li>
+     *     <li>OpenTEST-10.1.0-Xpress2-admin-guide</li>
+     * </ul>
+     * <p/>
+     * <p> <br>Invalid names:</p>
+     * <ul>
+     *     <li>guide1</li>
+     *     <li>guide.</li>
+     *     <li>guide-1</li>
+     *     <li>guide-.</li>
+     * </ul>
+     */
+    public static final Pattern DOCUMENT_FILE_PATTERN = Pattern
+            .compile("^([a-zA-Z]+)(-?[0-9].[0-9\\.]*[0-9])?(-SNAPSHOT|(-Ex|-ex|-X)press[0-9])?"
+                    + "([a-zA-Z-]*)((-?[0-9].[0-9\\.]*[0-9])?-?(SNAPSHOT|(Ex|ex|X)press[0-9]?)?)$");
+
+    /**
+     * Pattern to find version sting.
+     */
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(-[0-9].[0-9.]*[0-9])");
     /**
      * Rename document to reflect project and document name. For example,
      * index.pdf could be renamed OpenAM-Admin-Guide.pdf.
@@ -60,17 +99,18 @@ public final class DocUtils {
     public static String renameDoc(final String projectName,
             final String docName, final String version, final String extension) {
         String doc = docName;
-        if (isDocNameOk(doc)) {
+
+        Matcher docNameMatcher = DOCUMENT_FILE_PATTERN.matcher(docName);
+
+        if (docNameMatcher.matches()) {
             doc = capitalize(doc);
         } else {
             return "";
         }
 
-        // Need trailing dash when version is not empty.
-        String vers = version;
-        if (!vers.equalsIgnoreCase("")) {
-            vers = vers + '-';
-        }
+        StringBuilder sb = StringUtils.isNotBlank(projectName)
+                           ? (new StringBuilder(projectName)).append("-")
+                           : new StringBuilder();
 
         // Only add a . if the extension is not empty.
         String ext = extension;
@@ -78,7 +118,11 @@ public final class DocUtils {
             ext = "." + ext;
         }
 
-        return projectName + '-' + vers + doc + ext;
+        Matcher versionMatcher = VERSION_PATTERN.matcher(docName);
+        if (!versionMatcher.matches() && StringUtils.isNotBlank(version)) {
+            sb.append(version).append("-");
+        }
+        return sb.append(doc).append(ext).toString();
     }
 
     /**
