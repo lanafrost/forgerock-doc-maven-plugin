@@ -78,6 +78,7 @@
   
   <xsl:param name="use.extensions" select="1" />
   <xsl:param name="linenumbering.everyNth" select="1" />
+  <xsl:param name="orderedlist.label.width">1.8em</xsl:param>
 
   <xsl:param name="default.table.frame">topbot</xsl:param>
   <xsl:param name="default.table.rules">none</xsl:param>
@@ -104,4 +105,6 @@
   <xsl:param name="ulink.footnotes" select="0" />
   <xsl:param name="ulink.show" select="0" />
   <xsl:param name="ulink.hyphenate.chars">:/@&amp;?.#</xsl:param>
+
+  <xsl:param name="hyphenate">false</xsl:param>
 </xsl:stylesheet>

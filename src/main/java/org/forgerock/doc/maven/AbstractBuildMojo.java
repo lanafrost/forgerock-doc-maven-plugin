@@ -53,7 +53,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * ForgeRock linktester plugin version to use. Executions seem to hit an NPE
      * when the version is not specified.
      *
-     * @parameter default-value="1.0.0" expression="${linkTesterVersion}
+     * @parameter default-value="1.1.0" expression="${linkTesterVersion}
      * @required
      */
     private String linkTesterVersion;
@@ -67,6 +67,14 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * @parameter default-value="false" expression="${skipLinkCheck}"
      */
     private String skipLinkCheck;
+
+    /**
+     * Whether to run the ForgeRock linktester plugin. You only need to run
+     * the linktester plugin from the top level of a project, not the modules.
+     *
+     * @parameter default-value="true" expression="${runLinkTester}"
+     */
+    private String runLinkTester;
 
     /**
      * Short name of the project, such as OpenAM, OpenDJ, OpenIDM.
@@ -221,6 +229,20 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      */
     public void setSkipLinkCheck(String doLinkCheck) {
         this.skipLinkCheck = doLinkCheck;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getRunLinkTester() {
+        return runLinkTester;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setRunLinkTester(String runLinkTester) {
+        this.runLinkTester = runLinkTester;
     }
 
     /**
