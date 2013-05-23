@@ -8,7 +8,7 @@
  * information:
  *     Portions Copyright [yyyy] [name of copyright owner]
  *
- *     Copyright 2012 ForgeRock AS
+ *     Copyright 2012-2013 ForgeRock AS
  *
  */
 
@@ -35,7 +35,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Docbkx Tools plugin version to use. Executions seem to hit an NPE when
      * the version is not specified.
      *
-     * @parameter default-value="2.0.14" expression="${docbkxVersion}
+     * @parameter default-value="2.0.14" property="docbkxVersion"
      * @required
      */
     private String docbkxVersion;
@@ -44,16 +44,24 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Maven resources plugin version to use. Executions seem to hit an NPE when
      * the version is not specified.
      *
-     * @parameter default-value="2.5" expression="${resourcesVersion}
+     * @parameter default-value="2.5" property="resourcesVersion"
      * @required
      */
     private String resourcesVersion;
 
     /**
+     * JCite version to use for code citations.
+     *
+     * @parameter default-value="1.13.0" property="jCiteVersion"
+     * @required
+     */
+    private String jCiteVersion;
+
+    /**
      * ForgeRock linktester plugin version to use. Executions seem to hit an NPE
      * when the version is not specified.
      *
-     * @parameter default-value="1.1.0" expression="${linkTesterVersion}
+     * @parameter default-value="1.2.0" property="linkTesterVersion"
      * @required
      */
     private String linkTesterVersion;
@@ -64,7 +72,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * href="https://github.com/aldaris/docbook-linktester/">linktester
      * plugin</a>.
      *
-     * @parameter default-value="false" expression="${skipLinkCheck}"
+     * @parameter default-value="false" property="skipLinkCheck"
      */
     private String skipLinkCheck;
 
@@ -72,14 +80,24 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Whether to run the ForgeRock linktester plugin. You only need to run
      * the linktester plugin from the top level of a project, not the modules.
      *
-     * @parameter default-value="true" expression="${runLinkTester}"
+     * @parameter default-value="true" property="runLinkTester"
      */
     private String runLinkTester;
 
     /**
+     * Whether to use common legal notice and front matter to build docs.
+     * Use of common content relies on {@code useGeneratedSources} being
+     * {@code true} as the common content overwrites files of the same
+     * name in the project.
+     *
+     * @parameter default-value="true" property="useSharedContent"
+     */
+    private boolean useSharedContent;
+
+    /**
      * Short name of the project, such as OpenAM, OpenDJ, OpenIDM.
      *
-     * @parameter expression="${projectName}"
+     * @parameter property="projectName"
      * @required
      */
     private String projectName;
@@ -87,7 +105,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
     /**
      * Google Analytics identifier for the project.
      *
-     * @parameter expression="${googleAnalyticsId}"
+     * @parameter property="googleAnalyticsId"
      * @required
      */
     private String googleAnalyticsId;
@@ -104,7 +122,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Process only this format. Choices include: epub, html, man, pdf, rtf.
      * Do not set both excludes and includes in the same configuration.
      *
-     * @parameter expression="${include}"
+     * @parameter property="include"
      */
     private String include;
 
@@ -112,16 +130,33 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Base directory for DocBook XML source files.
      *
      * @parameter default-value="${basedir}/src/main/docbkx"
-     *            expression="${docbkxSourceDirectory}"
+     * property="docbkxSourceDirectory"
      * @required
      */
     private File docbkxSourceDirectory;
 
     /**
+     * Base directory for processed DocBook XML source files.
+     *
+     * @parameter default-value="${project.build.directory}/generated-docbkx"
+     * property="docbkxGeneratedSourceDirectory"
+     * @required
+     */
+    private File docbkxGeneratedSourceDirectory;
+
+    /**
+     * Whether to use generated sources.
+     *
+     * @parameter default-value="true" property="useGeneratedSources"
+     * @required
+     */
+    private boolean useGeneratedSources;
+
+    /**
      * Base directory for built documentation.
      *
      * @parameter default-value="${project.build.directory}/docbkx"
-     *            expression="${docbkxOutputDirectory}"
+     * property="docbkxOutputDirectory"
      * @required
      */
     private File docbkxOutputDirectory;
@@ -137,7 +172,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
     /**
      * The Maven Project Object.
      *
-     * @parameter expression="${project}"
+     * @parameter property="project"
      * @required
      * @readonly
      */
@@ -146,7 +181,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
     /**
      * The Maven Session Object.
      *
-     * @parameter expression="${session}"
+     * @parameter property="session"
      * @required
      * @readonly
      */
@@ -164,12 +199,12 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Top-level DocBook documents included in the documentation set such as
      * books, articles, and references share a common entry point, which is a
      * file having the name specified by this element.
-     * <p>
+     * <p/>
      * For example, if your documentation set has Release Notes, an Installation
      * Guide, a Developer's Guide, and a Reference, your source layout under the
      * base DocBook XML source directory might look like this, assuming you use
      * the default file name, <code>index.xml</code>.
-     *
+     * <p/>
      * <pre>
      * docbkx/
      *  dev-guide/
@@ -187,150 +222,202 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      *  shared/
      *   ...other files...
      * </pre>
-     *
+     * <p/>
      * The <code>...other files...</code> can have whatever names you want, as
      * long as the name does not conflict with the file name you set here.
      *
-     * @parameter default-value="index.xml" expression="${documentSrcName}"
+     * @parameter default-value="index.xml" property="documentSrcName"
      * @required
      */
     private String documentSrcName;
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #docbkxVersion}
      */
     public String getDocbkxVersion() {
         return docbkxVersion;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #resourcesVersion}
      */
     public String getResourcesVersion() {
         return resourcesVersion;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #jCiteVersion}
+     */
+    public String getJCiteVersion() {
+        return jCiteVersion;
+    }
+
+    /**
+     * See return.
+     * @return {@link #linkTesterVersion}
      */
     public String getLinkTesterVersion() {
         return linkTesterVersion;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #skipLinkCheck}
      */
     public String getSkipLinkCheck() {
         return skipLinkCheck;
     }
 
     /**
-     * {@inheritDoc}
+     * See param.
+     * @param doLinkCheck {@link #skipLinkCheck}
      */
     public void setSkipLinkCheck(String doLinkCheck) {
         this.skipLinkCheck = doLinkCheck;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #runLinkTester}
      */
     public String getRunLinkTester() {
         return runLinkTester;
     }
 
     /**
-     * {@inheritDoc}
+     * See param.
+     * @param runLinkTester {@link #runLinkTester}
      */
     public void setRunLinkTester(String runLinkTester) {
         this.runLinkTester = runLinkTester;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #projectName}
      */
     public String getProjectName() {
         return projectName;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #googleAnalyticsId}
      */
     public String getGoogleAnalyticsId() {
         return googleAnalyticsId;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #excludes}
      */
     public List<String> getExcludes() {
         return excludes;
     }
 
     /**
-     * {@inheritDoc}
+     * See param.
+     * @param excludedFormats {@link #excludes}
      */
     public void setExcludes(final List<String> excludedFormats) {
         this.excludes = excludedFormats;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #include}
      */
     public String getInclude() {
         return include;
     }
 
     /**
-     * {@inheritDoc}
+     * See param.
+     * @param includedFormat {@link #include}
      */
     public void setInclude(String includedFormat) {
         this.include = includedFormat;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #docbkxSourceDirectory}
      */
     public File getDocbkxSourceDirectory() {
         return docbkxSourceDirectory;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @param directory {@link #docbkxSourceDirectory}
+     */
+    public void setDocbkxSourceDirectory(File directory) {
+        this.docbkxSourceDirectory = directory;
+    }
+
+    /**
+     * See return.
+     * @return {@link #docbkxGeneratedSourceDirectory}
+     */
+    public File getDocbkxGeneratedSourceDirectory() {
+        return docbkxGeneratedSourceDirectory;
+    }
+
+    /**
+     * See return.
+     * @return {@link #useGeneratedSources}
+     */
+    public boolean doUseGeneratedSources() {
+        return useGeneratedSources;
+    }
+
+    /**
+     * See return.
+     * @return {@link #docbkxOutputDirectory}
      */
     public File getDocbkxOutputDirectory() {
         return docbkxOutputDirectory;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #buildDirectory}
      */
     public File getBuildDirectory() {
         return buildDirectory;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #project}
      */
     public MavenProject getProject() {
         return project;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #session}
      */
     public MavenSession getSession() {
         return session;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #pluginManager}
      */
     public BuildPluginManager getPluginManager() {
         return pluginManager;
     }
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #documentSrcName}
      */
     public String getDocumentSrcName() {
         return documentSrcName;
@@ -341,10 +428,9 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * specified, then the default list of formats includes epub, html, man,
      * pdf, rtf.
      *
-     * @param defaults
-     *            (Restricted) list of formats to consider. Set this to limit
-     *            the list of output formats. Formats are passed on to the
-     *            plugin as is.
+     * @param defaults (Restricted) list of formats to consider. Set this to limit
+     *                 the list of output formats. Formats are passed on to the
+     *                 plugin as is.
      * @return List of output formats.
      */
     public List<String> getOutputFormats(final String... defaults)
@@ -376,5 +462,25 @@ abstract class AbstractBuildMojo extends AbstractMojo {
             formats = includes;
         }
         return formats;
+    }
+
+    /**
+     * Whether to use common legal notice and front matter to build docs.
+     * Use of common content relies on {@code useGeneratedSources} being
+     * {@code true} as the common content overwrites files of the same
+     * name in the project.
+     *
+     * @parameter default-value="true" property="useSharedContent"
+     */
+    public boolean doUseSharedContent() {
+        return useSharedContent;
+    }
+
+    /**
+     * See param.
+     * @param useSharedContent {@link #useSharedContent}
+     */
+    public void setUseSharedContent(boolean useSharedContent) {
+        this.useSharedContent = useSharedContent;
     }
 }

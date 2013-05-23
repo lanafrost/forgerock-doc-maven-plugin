@@ -8,7 +8,7 @@
  * information:
  *     Portions Copyright [yyyy] [name of copyright owner]
  *
- *     Copyright 2012 ForgeRock AS
+ *     Copyright 2012-2013 ForgeRock AS
  *
  */
 
@@ -39,13 +39,14 @@ public class SiteBuildMojo extends AbstractBuildMojo {
      * File system directory for site build.
      *
      * @parameter default-value="${project.build.directory}/site"
-     *            expression="${siteDirectory}"
+     * property="siteDirectory"
      * @required
      */
     private File siteDirectory;
 
     /**
-     * {@inheritDoc}
+     * See return.
+     * @return {@link #siteDirectory}
      */
     public final File getSiteDirectory() {
         return siteDirectory;
@@ -88,6 +89,12 @@ public class SiteBuildMojo extends AbstractBuildMojo {
             throw new MojoExecutionException("Failed to copy redirect file: "
                     + e.getMessage());
         }
+
+        // Test links in document source, and generate a report.
+        if (!getRunLinkTester().equalsIgnoreCase("false")) {
+            getLog().info("Running linktester...");
+            exec.testLinks();
+        }
     }
 
     /**
@@ -99,8 +106,7 @@ public class SiteBuildMojo extends AbstractBuildMojo {
          * directory. Man pages are not currently copied anywhere.
          *
          * @return Compound element specifying built documents to copy
-         * @throws MojoExecutionException
-         *             Something went wrong getting document names.
+         * @throws MojoExecutionException Something went wrong getting document names.
          */
         private MojoExecutor.Element getResources() throws MojoExecutionException {
 
@@ -164,8 +170,7 @@ public class SiteBuildMojo extends AbstractBuildMojo {
         /**
          * Lay out docs in site directory under <code>target/site/doc</code>.
          *
-         * @throws MojoExecutionException
-         *             Problem during execution.
+         * @throws MojoExecutionException Problem during execution.
          */
         public void layout() throws MojoExecutionException {
             if (siteDirectory == null) {
@@ -182,6 +187,44 @@ public class SiteBuildMojo extends AbstractBuildMojo {
                     configuration(element(name("encoding"), "UTF-8"),
                             element(name("outputDirectory"), siteDocDirectory),
                             getResources()),
+                    executionEnvironment(getProject(), getSession(),
+                            getPluginManager()));
+        }
+
+        /**
+         * Test links in source documentation.
+         *
+         * @throws MojoExecutionException Problem during execution.
+         */
+        void testLinks() throws MojoExecutionException {
+            String include = "**/" + getDocumentSrcName();
+            if (doUseGeneratedSources()) {
+                include = getDocbkxGeneratedSourceDirectory() + "/" + include;
+            }
+
+            final String log = getDocbkxOutputDirectory().getPath() + File.separator
+                    + "linktester.err";
+
+            final String jiraUrlPattern =
+                    "^https://bugster.forgerock.org/jira/browse/OPEN(AM|ICF|IDM|IG|DJ)-[0-9]{1,4}$";
+            final String rfcUrlPattern = "^http://tools.ietf.org/html/rfc[0-9]+$";
+
+            executeMojo(
+                    plugin(groupId("org.forgerock.maven.plugins"),
+                            artifactId("linktester-maven-plugin"),
+                            version(getLinkTesterVersion())),
+                    goal("check"),
+                    configuration(
+                            element(name("includes"),
+                                    element(name("include"), include)),
+                            element(name("validating"), "true"),
+                            element(name("skipUrls"), getSkipLinkCheck()),
+                            element(name("xIncludeAware"), "true"),
+                            element(name("failOnError"), "false"),
+                            element(name("outputFile"), log),
+                            element(name("skipUrlPatterns"),
+                                    element(name("skipUrlPattern"), jiraUrlPattern),
+                                    element(name("skipUrlPattern"), rfcUrlPattern))),
                     executionEnvironment(getProject(), getSession(),
                             getPluginManager()));
         }

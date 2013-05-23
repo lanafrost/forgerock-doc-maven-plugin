@@ -27,13 +27,20 @@ POM property called `gaId`, whose value is the Google Analytics ID.
 		  <plugin>
 		   <groupId>org.forgerock.commons</groupId>
 		   <artifactId>forgerock-doc-maven-plugin</artifactId>
-		   <version>1.1.0-SNAPSHOT</version>
+		   <version>${frDocPluginVersion}</version>
 		   <inherited>false</inherited>
 		   <configuration>
 		    <projectName>MyProject</projectName>
 		    <googleAnalyticsId>${gaId}</googleAnalyticsId>
 		   </configuration>
 		   <executions>
+		    <execution>
+		     <id>copy-common</id>
+		     <phase>pre-site</phase>
+		     <goals>
+		      <goal>boilerplate</goal>
+		     </goals>
+		    </execution>
 		    <execution>
 		     <id>build-doc</id>
 		     <phase>pre-site</phase>
@@ -67,6 +74,7 @@ images in an `images` folder inside the document folder.
 An example project layout looks like this:
 
      src/main/docbkx/
+      legal.xml
       dev-guide/
        images/
        index.xml
@@ -84,22 +92,52 @@ An example project layout looks like this:
        index.xml
        ...other files...
       shared/
+       sec-accessing-doc-online.xml
+       sec-formatting-conventions.xml
+       sec-interface-stability.xml
+       sec-joining-the-community.xml
+       sec-release-levels.xml
        ...other files...
+
+## Using Shared Content
+
+By default the plugin replaces the following common files at build time,
+ensuring your documentation includes the latest versions.
+
+    legal.xml
+    shared/sec-accessing-doc-online.xml
+    shared/sec-formatting-conventions.xml
+    shared/sec-interface-stability.xml
+    shared/sec-joining-the-community.xml
+    shared/sec-release-levels.xml
+
+The plugin does not replace your copies of the files. Instead it copies
+common files to the expected locations in the generated sources.
+
+Be aware that the plugin merely replaces the files in the generated sources,
+and then uses the generated sources to build the documentation. Specifically
+the plugin does not check that you store the files in the expected location.
+
+It also does not check whether you got your executions out of order. Make sure
+the `boilerplate` goal immediately precedes the `build` goal.
+
+To avoid using common content, turn off the feature:
+
+    <useSharedContent>false</useSharedContent> <!-- true by default -->
 
 ## Link Checking
 
 By default, the plugin checks links found in the DocBook XML source, including
-Olinks. You can find errors in the `target/linktester.err` file.
+Olinks. You can find errors in the `target/docbkx/linktester.err` file.
 
 If you want to skip the checks for external URLs, pass `-DskipLinkCheck=true`
 to Maven, as in the following example:
 
-    mvn -DskipLinkCheck=true clean pre-site
+    mvn -DskipLinkCheck=true clean site
 
-This capability is provided by Peter Major's
-[linktester](https://github.com/aldaris/docbook-linktester) plugin.
-
-Run linktester at the top level of the project, not in modules. 
+The check is run at the end of the site layout phase. This capability is
+provided by Peter Major's [linktester](https://github.com/aldaris/docbook-linktester)
+plugin.
 
 ## Excluding Output Formats
 
@@ -133,13 +171,13 @@ Formats include `epub`, `html`, `man`, `pdf`, and `rtf`.
 ## Expected Results
 
 When you run the plugin with `mvn pre-site`, it builds the output formats,
-which you find under `target/docbkx`. The plugin also runs the link check.
+which you find under `target/docbkx`.
 
 When you run the plugin with `mvn site`, it takes what was constructed during
 the `pre-site` phase and moves it under `target/site/doc` as expected for a
 Maven project site. The plugin adds an `index.html` in that directory that
 redirects to `http://project.forgerock.org/docs.html`, so you do need one of
-those in your Maven site.
+those in your Maven site. The plugin also runs the link check.
 
 The plugin also adds a `.htaccess` file under `target/site/doc` indicating to
 Apache HTTPD server to compress text files like HTML and CSS.
@@ -179,6 +217,36 @@ in HTML.
 Brush support for `aci`, `csv`, `http`, `ini`, and `ldif` is provided by
 [a fork of SyntaxHighlighter](https://github.com/markcraig/SyntaxHighlighter).
 
+## JCite Integration
+
+[JCite](http://arrenbrecht.ch/jcite/) lets you cite, rather than copy and paste,
+Java source code in your documentation, reducing the likelihood that the
+developer examples get out of sync with your documentation.
+
+To run JCite, add an execution like this prior to your pre-site `boilerplate`
+goal:
+
+    <execution>
+     <id>run-jcite</id>
+     <phase>pre-site</phase>
+     <goals>
+      <goal>jcite</goal>
+     </goals>
+    </execution>
+
+Also make sure that your build uses the sources processed by JCite:
+
+    <useGeneratedSources>true</useGeneratedSources> <!-- true by default -->
+
+Code citations should fit inside ProgramListing elements with language set
+to `java` to pick up syntax highlighting. Use plain citations as in the
+following example:
+
+    <programlisting language="java"
+    >[jcp:org.forgerock.doc.jcite.test.Test:--- mainMethod]</programlisting>
+
+See the `forgerock-doc-maven-plugin-test` project for an example.
+
 * * *
 This work is licensed under the Creative Commons
 Attribution-NonCommercial-NoDerivs 3.0 Unported License.
@@ -187,4 +255,4 @@ To view a copy of this license, visit
 or send a letter to Creative Commons, 444 Castro Street,
 Suite 900, Mountain View, California, 94041, USA.
 
-Copyright 2012 ForgeRock AS
+Copyright 2012-2013 ForgeRock AS
