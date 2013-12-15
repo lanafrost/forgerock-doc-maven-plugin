@@ -15,11 +15,16 @@
 package org.forgerock.doc.maven;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Plugin;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -62,6 +67,8 @@ public class JCiteBuildMojo extends AbstractBuildMojo {
      * When running JCite, the set of source paths where cited Java files are to
      * be found.
      *
+     * If source paths are not set, {@code src/main/java} is used.
+     *
      * @parameter
      */
     private List<File> sourcePaths;
@@ -81,6 +88,10 @@ public class JCiteBuildMojo extends AbstractBuildMojo {
                     getDocbkxGeneratedSourceDirectory().getPath());
             String sourceDir = FilenameUtils.separatorsToUnix(
                     getDocbkxSourceDirectory().getPath());
+            if (doUseFilteredSources()) {
+                sourceDir = FilenameUtils.separatorsToUnix(
+                        getFilteredDocbkxSourceDirectory().getPath());
+            }
 
             // mojo-executor lacks fluent support for element attributes.
             // You can hack around this by including attributes in the name
@@ -128,29 +139,38 @@ public class JCiteBuildMojo extends AbstractBuildMojo {
             Xpp3Dom configuration = new Xpp3Dom("configuration");
             configuration.addChild(target);
 
-            // mojo-executor lacks fluent support for dependencies.
-            // The antrun plugin needs JCite in its runtime classpath.
-            Plugin antrun = MojoExecutor.plugin(
-                    "org.apache.maven.plugins",
-                    "maven-antrun-plugin",
-                    "1.7");
-
-            // See https://code.google.com/r/markcraig-jcite/.
-            Dependency jCitePlugin = new Dependency();
-            jCitePlugin.setGroupId("org.mcraig");
-            jCitePlugin.setArtifactId("jcite");
-            jCitePlugin.setVersion(getJCiteVersion());
-
-            antrun.addDependency(jCitePlugin);
-
             executeMojo(
-                    antrun,
+                    plugin(
+                            groupId("org.apache.maven.plugins"),
+                            artifactId("maven-antrun-plugin"),
+                            version("1.7"),
+                            dependencies(
+                                    dependency(
+                                    // See https://code.google.com/r/markcraig-jcite/.
+                                            groupId("org.mcraig"),
+                                            artifactId("jcite"),
+                                            version(getJCiteVersion())))),
                     goal("run"),
                     configuration,
                     executionEnvironment(
                             getProject(),
                             getSession(),
                             getPluginManager()));
+
+            // Copy non-XML files to the generated sources directory as well.
+            IOFileFilter nonXMLFilter = FileFilterUtils.notFileFilter(
+                    FileFilterUtils.suffixFileFilter(".xml"));
+            IOFileFilter nonXMLFiles = FileFilterUtils.and(
+                    FileFileFilter.FILE, nonXMLFilter);
+            FileFilter filter = FileFilterUtils.or(
+                    DirectoryFileFilter.DIRECTORY, nonXMLFiles);
+            try {
+                FileUtils.copyDirectory(
+                        new File(sourceDir), new File(outputDir), filter);
+            } catch (IOException ioe) {
+                throw new MojoExecutionException(
+                        "Failed to copy non-XML files.", ioe);
+            }
         }
     }
 }

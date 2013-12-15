@@ -1,64 +1,83 @@
 # ForgeRock Doc Build Maven Plugin
 
 This Maven plugin centralizes configuration of core documentation, to ensure
-that output documents are formatted uniformly.
+that documents are formatted uniformly.
+
+_This document covers functionality present in 2.0.0-SNAPSHOT._
 
 With centralized configuration handled by this Maven plugin, the core
 documentation-related project configuration takes at least two arguments:
 
 *   `<projectName>`: the short name for the project such as OpenAM, OpenDJ,
-    or OpenIDM
+    OpenICF, OpenIDM, OpenIG, and so forth
 *   `<googleAnalyticsId>`: to add Google Analytics JavaScript to the HTML
     output
 
-The project then runs two plugin executions:
+The project runs multiple plugin executions:
 
-1.  A `build` goal in the `pre-site` phase to build and massage output
-2.  A `layout` goal in the `site` phase to copy content under
-    `site-doc`
+1.  A `filter` goal for Maven resource filtering on source files
+2.  A `boilerplate` goal to copy common content
+3.  A `prepare` goal to prepare sources for the build
+4.  A `build` goal in the `pre-site` phase to build and massage output
+5.  A `layout` goal in the `site` phase to copy content under `site/doc`
+6.  A `release` goal to prepare site documentation for release
 
 ## Example Plugin Specification
 
 You call the plugin from your `pom.xml` as follows. This example uses a
 POM property called `gaId`, whose value is the Google Analytics ID.
 
-		<build>
-		 <plugins>
-		  <plugin>
-		   <groupId>org.forgerock.commons</groupId>
-		   <artifactId>forgerock-doc-maven-plugin</artifactId>
-		   <version>${frDocPluginVersion}</version>
-		   <inherited>false</inherited>
-		   <configuration>
-		    <projectName>MyProject</projectName>
-		    <googleAnalyticsId>${gaId}</googleAnalyticsId>
-		   </configuration>
-		   <executions>
-		    <execution>
-		     <id>copy-common</id>
-		     <phase>pre-site</phase>
-		     <goals>
-		      <goal>boilerplate</goal>
-		     </goals>
-		    </execution>
-		    <execution>
-		     <id>build-doc</id>
-		     <phase>pre-site</phase>
-		     <goals>
-		      <goal>build</goal>
-		     </goals>
-		    </execution>
-		    <execution>
-		     <id>layout-doc</id>
-		     <phase>site</phase>
-		     <goals>
-		      <goal>layout</goal>
-		     </goals>
-		    </execution>
-		   </executions>
-		  </plugin>
-		 </plugins>
-		</build>
+        <build>
+         <plugins>
+          <plugin>
+           <groupId>org.forgerock.commons</groupId>
+           <artifactId>forgerock-doc-maven-plugin</artifactId>
+           <version>${frDocPluginVersion}</version>
+           <inherited>false</inherited>
+           <configuration>
+            <projectName>MyProject</projectName>
+            <googleAnalyticsId>${gaId}</googleAnalyticsId>
+           </configuration>
+           <executions>
+            <execution>
+             <id>filter-sources</id>
+             <phase>pre-site</phase>
+             <goals>
+              <goal>filter</goal>
+             </goals>
+            </execution>
+            <execution>
+             <id>copy-common</id>
+             <phase>pre-site</phase>
+             <goals>
+              <goal>boilerplate</goal>
+             </goals>
+            </execution>
+            <execution>
+             <id>prepare-sources</id>
+             <phase>pre-site</phase>
+             <goals>
+              <goal>prepare</goal>
+             </goals>
+            </execution>
+            <execution>
+             <id>build-doc</id>
+             <phase>pre-site</phase>
+             <goals>
+              <goal>build</goal>
+             </goals>
+            </execution>
+            <execution>
+             <id>layout-doc</id>
+             <phase>site</phase>
+             <goals>
+              <goal>layout</goal>
+             </goals>
+            </execution>
+           </executions>
+          </plugin>
+         </plugins>
+        </build>
 
 ## Source Layout Requirements
 
@@ -99,6 +118,17 @@ An example project layout looks like this:
        sec-release-levels.xml
        ...other files...
 
+## Resolving Maven Properties
+
+The `pre-site` goal of `filter` uses the Maven resources plugin to replace
+Maven properties like `${myProperty}` with their values. This allows you to
+use Maven properties in attribute value, such as `xlink:href="${myURL}"`
+where the form using a processing instruction `xlink:href="<?eval ${myURL}"?>`
+is not valid XML.
+
+The execution of the `filter` goal must be the first in the list of `pre-site`
+phase goals for this plugin as shown in the example above.
+
 ## Using Shared Content
 
 By default the plugin replaces the following common files at build time,
@@ -124,6 +154,53 @@ the `boilerplate` goal immediately precedes the `build` goal.
 To avoid using common content, turn off the feature:
 
     <useSharedContent>false</useSharedContent> <!-- true by default -->
+
+## PNG Image Manipulation
+
+Getting screenshots and other images to look okay in PDF can be a hassle.
+The plugin therefore adjusts the XML to make large PNG images fit in the page,
+and adjusts dots-per-inch on PNG images to make them look okay in print.
+
+**Note: Do capture screenshots at 72 DPI. Retina displays can default to 144.**
+
+To take advantage of this feature, you must include a new `pre-site` goal
+after the sources have been pre-processed:
+
+    <execution>
+     <id>prepare-sources</id>
+     <phase>pre-site</phase>
+     <goals>
+      <goal>prepare</goal>
+     </goals>
+    </execution>
+
+Furthermore, you can provide PlantUML text files instead of images.
+[PlantUML](http://plantuml.sourceforge.net/)
+is an open source tool written in Java to create UML diagrams from text files.
+Using UML instead of drawing images can be particularly useful
+when constructing complicated sequence diagrams.
+
+The text files are rendered as PNG images where they are found,
+so put your PlantUML `.txt` files in the `images/` directory for your book.
+Then reference the `.png` version as if it existed already.
+
+    <mediaobject xml:id="figure-openid-connect-basic">
+     <alt>Generated sequence diagram</alt>
+     <imageobject>
+      <imagedata fileref="images/openid-connect-basic.png" format="PNG" />
+     </imageobject>
+     <textobject>
+      <para>
+       The sequence diagram is described in images/openid-connect-basic.txt.
+      </para>
+     </textobject>
+    </mediaobject>
+
+Your PlantUML text files must have extension `.txt`.
+
+While creating images, you can generate them with PlantUML by hand.
+
+    java -jar plantuml.jar image.txt
 
 ## Link Checking
 
@@ -181,6 +258,8 @@ those in your Maven site. The plugin also runs the link check.
 
 The plugin also adds a `.htaccess` file under `target/site/doc` indicating to
 Apache HTTPD server to compress text files like HTML and CSS.
+If the server is configured to ignore `.htaccess`,
+consult with the server administrator to update server settings as necessary.
 
 ## Release Layout
 
@@ -191,7 +270,29 @@ ID using the property.
 
      mvn -DisDraftMode=no -DreleaseVersion=1.0.0 -D"gaId=UA-23412190-14" \
      -D"releaseDate=Software release date: January 1, 1970" \
+     -D"pubDate=Publication date: December 31, 1969" \
      clean site org.forgerock.commons:forgerock-doc-maven-plugin:release
+
+Both dates are reflected in the documents to publish.
+* The `releaseDate` indicates the date the software was released.
+* The `pubDate` indicates the date you published the documentation.
+
+## Zip of Release Documentation
+
+To build a .zip of the release documentation, you can further set
+`-DbuildReleaseZip=true` when running the `release` goal on the command line,
+or `<buildReleaseZip>true</buildReleaseZip>` in the execution configuration.
+
+The file, `projectName-releaseVersion-docs.zip`, can be found
+after the build in the project build directory. When unzipped, it unpacks
+the documentation for the release under `projectName/releaseVersion/`.
+
+At present this builds a .zip only of the release documents
+for the current module.
+In other words, only HTML and PDF output,
+and only corresponding to the DocBook XML sources built in the current module.
+As a result, if your documentation set requires documents from multiple modules,
+you must still build the final release .zip yourself.
 
 ## Notes on Syntax Highlighting
 
@@ -200,19 +301,19 @@ rather than DocBook's syntax highlighting capabilities for HTML output, as
 SyntaxHighlighter includes handy features for selecting and numbering lines
 in HTML.
 
-	 Source			SyntaxHighlighter	Brush Name
-	 ---			---					---
-	 aci			aci					shBrushAci.js
-	 csv			csv					shBrushCsv.js
-	 html			html				shBrushXml.js
-	 http			http				shBrushHttp.js
-	 ini			ini					shBrushProperties.js
-	 java			java				shBrushJava.js
-	 javascript		javascript			shBrushJScript.js
-	 ldif			ldif				shBrushLDIF.js
-	 none			plain				shBrushPlain.js
-	 shell			shell				shBrushBash.js
-	 xml			xml					shBrushXml.js
+     Source         SyntaxHighlighter   Brush Name
+     ---            ---                 ---
+     aci            aci                 shBrushAci.js
+     csv            csv                 shBrushCsv.js
+     html           html                shBrushXml.js
+     http           http                shBrushHttp.js
+     ini            ini                 shBrushProperties.js
+     java           java                shBrushJava.js
+     javascript     javascript          shBrushJScript.js
+     ldif           ldif                shBrushLDIF.js
+     none           plain               shBrushPlain.js
+     shell          shell               shBrushBash.js
+     xml            xml                 shBrushXml.js
 
 Brush support for `aci`, `csv`, `http`, `ini`, and `ldif` is provided by
 [a fork of SyntaxHighlighter](https://github.com/markcraig/SyntaxHighlighter).
