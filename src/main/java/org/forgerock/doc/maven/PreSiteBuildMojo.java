@@ -86,6 +86,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
         if (formats.contains("epub")) {
             getLog().info("Building EPUB...");
             exec.buildEPUB(baseConf);
+            getLog().info("...post-processing EPUB...");
             postProcessEPUB(getDocbkxOutputDirectory().getPath()
                     + File.separator + "epub");
         }
@@ -93,8 +94,11 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
         // Build and prepare PDF for publishing.
         if (formats.contains("pdf")) {
             getLog().info("Building PDF...");
+            getLog().info("...generating olink DB files for PDF...");
             exec.buildFoOlinkDB(baseConf, "pdf");
+            getLog().info("...generating PDF files...");
             exec.buildPDF(baseConf);
+            getLog().info("...post-processing PDF...");
             postProcessPDF(getDocbkxOutputDirectory().getPath()
                     + File.separator + "pdf");
         }
@@ -102,8 +106,11 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
         // Build and prepare RTF for publishing.
         if (formats.contains("rtf")) {
             getLog().info("Building RTF...");
+            getLog().info("...generating olink DB files for RTF...");
             exec.buildFoOlinkDB(baseConf, "rtf");
+            getLog().info("...generating RTF files...");
             exec.buildRTF(baseConf);
+            getLog().info("...post-processing RTF...");
             postProcessRTF(getDocbkxOutputDirectory().getPath()
                     + File.separator + "rtf");
         }
@@ -117,12 +124,18 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
         // Build and prepare HTML for publishing.
         if (formats.contains("html")) {
             getLog().info("Building single page HTML...");
+            getLog().info("...generating olink DB files for single page HTML...");
             exec.buildSingleHTMLOlinkDB(baseConf);
+            getLog().info("...generating single page HTML files...");
             exec.buildSingleHTML(baseConf);
 
             getLog().info("Building chunked HTML...");
+            getLog().info("...generating olink DB files for chunked HTML...");
             exec.buildChunkedHTMLOlinkDB(baseConf);
+            getLog().info("...generating chunked HTML files...");
             exec.buildChunkedHTML(baseConf);
+
+            getLog().info("...post-processing HTML...");
             postProcessHTML(getDocbkxOutputDirectory().getPath()
                     + File.separator + "html");
         }
@@ -1290,6 +1303,9 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             cfg.add(element(name("xincludeSupported"), isXincludeSupported()));
             cfg.add(element(name("sourceDirectory"), FilenameUtils
                     .separatorsToUnix(sourceDirectory.getPath())));
+            cfg.add(element(name("chunkedOutput"), "false"));
+            cfg.add(element(name("htmlCustomization"), FilenameUtils
+                    .separatorsToUnix(getSingleHTMLCustomization().getPath())));
 
             Set<String> docNames = DocUtils.getDocumentNames(
                     sourceDirectory, getDocumentSrcName());
@@ -1376,6 +1392,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             cfg.add(element(name("sourceDirectory"), FilenameUtils
                     .separatorsToUnix(sourceDirectory.getPath())));
             cfg.add(element(name("chunkedOutput"), "true"));
+
             cfg.add(element(name("htmlCustomization"), FilenameUtils
                     .separatorsToUnix(getChunkedHTMLCustomization().getPath())));
 
@@ -1397,6 +1414,10 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                                 + "/"
                                 + docName
                                 + "-chunked.target.db"));
+                final String chunkBaseDir = FilenameUtils
+                        .separatorsToUnix(getDocbkxOutputDirectory().getPath())
+                        + "/html/" + docName + "/index/";
+                cfg.add(element(name("chunkBaseDir"), chunkBaseDir));
 
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
@@ -1442,14 +1463,27 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
 
             copyImages("html", FilenameUtils.getBaseName(getDocumentSrcName()));
 
-            executeMojo(
-                    plugin(groupId("com.agilejava.docbkx"),
-                            artifactId("docbkx-maven-plugin"),
-                            version(getDocbkxVersion())),
-                    goal("generate-html"),
-                    configuration(cfg.toArray(new Element[cfg.size()])),
-                    executionEnvironment(getProject(), getSession(),
-                            getPluginManager()));
+            Set<String> docNames = DocUtils.getDocumentNames(
+                    sourceDirectory, getDocumentSrcName());
+            if (docNames.isEmpty()) {
+                throw new MojoExecutionException("No document names found.");
+            }
+
+            for (String docName : docNames) {
+                final String chunkBaseDir = FilenameUtils
+                        .separatorsToUnix(getDocbkxOutputDirectory().getPath())
+                        + "/html/" + docName + "/index/";
+                cfg.add(element(name("chunkBaseDir"), chunkBaseDir));
+
+                executeMojo(
+                        plugin(groupId("com.agilejava.docbkx"),
+                                artifactId("docbkx-maven-plugin"),
+                                version(getDocbkxVersion())),
+                        goal("generate-html"),
+                        configuration(cfg.toArray(new Element[cfg.size()])),
+                        executionEnvironment(getProject(), getSession(),
+                                getPluginManager()));
+            }
         }
     }
 }
