@@ -389,7 +389,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
         try {
             StringBuilder content = new StringBuilder();
             content.append("<?xml version='1.0' encoding='utf-8'?>\n")
-                    .append("<!DOCTYPE targetset[\n");
+                    .append("<!DOCTYPE targetset [\n");
 
             String targetDbDtd = IOUtils.toString(getClass()
                     .getResourceAsStream("/targetdatabase.dtd"));
@@ -402,8 +402,14 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             }
 
             for (String docName : docNames) {
+
+/*  <targetsFilename> is ignored with docbkx-tools 2.0.15.
                 String sysId = getBuildDirectory().getAbsolutePath()
                         + File.separator + docName + "-single.target.db";
+*/
+                String sysId = baseDir.getAbsolutePath()
+                        + "/target/docbkx/html/" + docName + "/index.html.target.db";
+
                 content.append("<!ENTITY ").append(docName)
                         .append(" SYSTEM '").append(sysId).append("'>\n");
             }
@@ -1330,6 +1336,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                 cfg.add(element(name("includes"), docName + "/"
                         + getDocumentSrcName()));
                 cfg.add(element(name("collectXrefTargets"), "only"));
+
+/*  <targetsFilename> is ignored with docbkx-tools 2.0.15.
                 cfg.add(element(
                         name("targetsFilename"),
                         FilenameUtils.separatorsToUnix(getBuildDirectory()
@@ -1337,6 +1345,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                                 + "/"
                                 + docName
                                 + "-single.target.db"));
+*/
 
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
