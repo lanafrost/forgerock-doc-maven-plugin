@@ -1121,10 +1121,19 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                                 + "/" + docName + "-" + extension + ".target.db"));
 */
 
+                // Due to https://code.google.com/p/docbkx-tools/issues/detail?id=112
+                // RTF generation does not work with docbkx-tools 2.0.15.
+                // If the format is RTF, stick with 2.0.14 for now.
+                // TODO: Remove this sick hack when docbkx-tools #112 is fixed.
+                String docbkxVersion = getDocbkxVersion();
+                if (extension.equalsIgnoreCase("rtf")) {
+                    docbkxVersion = "2.0.14";
+                }
+
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
                                 artifactId("docbkx-maven-plugin"),
-                                version(getDocbkxVersion())),
+                                version(docbkxVersion)),
                         goal("generate-" + extension),
                         configuration(cfg.toArray(new Element[cfg.size()])),
                         executionEnvironment(getProject(), getSession(),
@@ -1259,11 +1268,20 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                         FilenameUtils.separatorsToUnix(getDocbkxOutputDirectory().getPath())
                                 + "/" + format));
 
+                // Due to https://code.google.com/p/docbkx-tools/issues/detail?id=112
+                // RTF generation does not work with docbkx-tools 2.0.15.
+                // If the format is RTF, stick with 2.0.14 for now.
+                // TODO: Remove this sick hack when docbkx-tools #112 is fixed.
+                String docbkxVersion = getDocbkxVersion();
+                if (format.equalsIgnoreCase("rtf")) {
+                    docbkxVersion = "2.0.14";
+                }
+
                 executeMojo(
                         plugin(
                                 groupId("com.agilejava.docbkx"),
                                 artifactId("docbkx-maven-plugin"),
-                                version(getDocbkxVersion()),
+                                version(docbkxVersion),
                                 dependencies(
                                         dependency(
                                                 groupId("net.sf.offo"),
