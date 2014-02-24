@@ -186,13 +186,12 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
 
     /**
      * Prepare built EPUB documents for publication. Currently this method
-     * renames the files.
+     * does nothing.
      *
-     * @param epubDir Directory under which to find the built files
      * @throws MojoExecutionException Something went wrong updating files.
      */
     final void postProcessEPUB(final String epubDir) throws MojoExecutionException {
-        renameDocuments(epubDir, "epub");
+        // Do nothing.
     }
 
     /**
@@ -1046,16 +1045,25 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
 
             ArrayList<MojoExecutor.Element> cfg = new ArrayList<MojoExecutor.Element>();
             cfg.addAll(baseConfiguration);
-            cfg.add(element(name("includes"), "*/" + getDocumentSrcName()));
             cfg.add(element(name("epubCustomization"), FilenameUtils
                     .separatorsToUnix(getEpubCustomization().getPath())));
             cfg.add(element(name("targetDirectory"), FilenameUtils
                     .separatorsToUnix(getDocbkxOutputDirectory().getPath()
                             + File.separator + "epub")));
 
-            copyImages("epub", FilenameUtils.getBaseName(getDocumentSrcName()));
+            copyImages("epub");
 
-            executeMojo(
+            Set<String> docNames = DocUtils.getDocumentNames(
+                    sourceDirectory, getDocumentSrcName());
+            if (docNames.isEmpty()) {
+                throw new MojoExecutionException("No document names found.");
+            }
+
+            for (String docName : docNames) {
+                cfg.add(element(name("includes"), docName + "/"
+                        + getDocumentSrcName()));
+
+                executeMojo(
                     plugin(groupId("com.agilejava.docbkx"),
                             artifactId("docbkx-maven-plugin"),
                             version(getDocbkxVersion())),
@@ -1063,6 +1071,12 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                     configuration(cfg.toArray(new Element[cfg.size()])),
                     executionEnvironment(getProject(), getSession(),
                             getPluginManager()));
+
+                File outputEpub = new File(
+                        new File(getDocbkxOutputDirectory(), "epub"),
+                        FilenameUtils.getBaseName(getDocumentSrcName()) + ".epub");
+                renameDocument(outputEpub, docName);
+            }
         }
 
         /**
