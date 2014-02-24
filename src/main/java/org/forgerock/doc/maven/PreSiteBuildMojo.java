@@ -277,8 +277,14 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             }
 
             for (String docName : docNames) {
+/*  <targetsFilename> is ignored with docbkx-tools 2.0.15.
                 String sysId = getBuildDirectory().getAbsolutePath()
                         + File.separator + docName + "-" + extension + ".target.db";
+*/
+                String sysId = baseDir.getAbsolutePath()
+                        + "/target/docbkx/" + extension + "/" + docName
+                        + "/index.fo.target.db";
+
                 content.append("<!ENTITY ").append(docName)
                         .append(" SYSTEM '").append(sysId).append("'>\n");
             }
@@ -1093,10 +1099,13 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                 cfg.add(element(name("collectXrefTargets"), "yes"));
                 cfg.add(element(name("currentDocid"), docName));
                 cfg.add(element(name("insertOlinkPdfFrag"), "1"));
-                cfg.add(element(
+
+/*  <targetsFilename> is ignored with docbkx-tools 2.0.15.
+                 cfg.add(element(
                         name("targetsFilename"),
                         FilenameUtils.separatorsToUnix(getBuildDirectory().getPath())
                                 + "/" + docName + "-" + extension + ".target.db"));
+*/
 
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
