@@ -369,6 +369,14 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
     private String singleHTMLCustomization;
 
     /**
+     * Project base directory, needed to find target.db files.
+     *
+     * @parameter default-value="${basedir}"
+     * @required
+     */
+    private File baseDir;
+
+    /**
      * Get absolute path to a temporary Olink target database XML document that
      * points to the individual generated Olink DB files, for single page HTML.
      *
@@ -452,7 +460,7 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
         try {
             StringBuilder content = new StringBuilder();
             content.append("<?xml version='1.0' encoding='utf-8'?>\n")
-                    .append("<!DOCTYPE targetset[\n");
+                    .append("<!DOCTYPE targetset [\n");
 
             String targetDbDtd = IOUtils.toString(getClass()
                     .getResourceAsStream("/targetdatabase.dtd"));
@@ -465,8 +473,13 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             }
 
             for (String docName : docNames) {
+/*  <targetsFilename> is ignored with docbkx-tools 2.0.15.
                 String sysId = getBuildDirectory().getAbsolutePath()
                         + File.separator + docName + "-chunked.target.db";
+*/
+                String sysId = baseDir.getAbsolutePath() + "/target/docbkx/html/"
+                        + docName + "/index.html.target.db";
+
                 content.append("<!ENTITY ").append(docName)
                         .append(" SYSTEM '").append(sysId).append("'>\n");
             }
@@ -1407,6 +1420,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                 cfg.add(element(name("includes"), docName + "/"
                         + getDocumentSrcName()));
                 cfg.add(element(name("collectXrefTargets"), "only"));
+
+/*  <targetsFilename> is ignored with docbkx-tools 2.0.15.
                 cfg.add(element(
                         name("targetsFilename"),
                         FilenameUtils.separatorsToUnix(getBuildDirectory()
@@ -1414,6 +1429,8 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
                                 + "/"
                                 + docName
                                 + "-chunked.target.db"));
+*/
+
                 final String chunkBaseDir = FilenameUtils
                         .separatorsToUnix(getDocbkxOutputDirectory().getPath())
                         + "/html/" + docName + "/index/";
@@ -1451,15 +1468,12 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
 
             ArrayList<MojoExecutor.Element> cfg = new ArrayList<MojoExecutor.Element>();
             cfg.addAll(baseConfiguration);
-            cfg.add(element(name("includes"), "*/" + getDocumentSrcName()));
             cfg.add(element(name("chunkedOutput"), "true"));
             cfg.add(element(name("htmlCustomization"), FilenameUtils
                     .separatorsToUnix(getChunkedHTMLCustomization().getPath())));
             cfg.add(element(name("targetDatabaseDocument"),
                     buildChunkedHTMLTargetDB()));
-            cfg.add(element(name("targetDirectory"), FilenameUtils
-                    .separatorsToUnix(getDocbkxOutputDirectory().getPath()
-                            + File.separator + "html")));
+            cfg.add(element(name("generateManifest"), "1"));
 
             copyImages("html", FilenameUtils.getBaseName(getDocumentSrcName()));
 
@@ -1470,10 +1484,17 @@ public class PreSiteBuildMojo extends AbstractBuildMojo {
             }
 
             for (String docName : docNames) {
+                cfg.add(element(name("includes"),
+                        docName + "/" + getDocumentSrcName()));
+
                 final String chunkBaseDir = FilenameUtils
                         .separatorsToUnix(getDocbkxOutputDirectory().getPath())
                         + "/html/" + docName + "/index/";
                 cfg.add(element(name("chunkBaseDir"), chunkBaseDir));
+
+                cfg.add(element(name("manifest"),
+                        getDocbkxOutputDirectory().getPath()
+                                + "/" + docName + ".manifest"));
 
                 executeMojo(
                         plugin(groupId("com.agilejava.docbkx"),
