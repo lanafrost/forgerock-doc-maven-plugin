@@ -8,7 +8,7 @@
  * information:
  *     Portions Copyright [yyyy] [name of copyright owner]
  *
- *     Copyright 2013 ForgeRock AS
+ *     Copyright 2013-2014 ForgeRock AS
  *
  */
 
@@ -40,6 +40,26 @@ import org.twdata.maven.mojoexecutor.MojoExecutor;
 public class PrepareSourcesMojo extends AbstractBuildMojo {
 
     /**
+     * DocBook XML sources found here.
+     */
+    private File sourceDirectory;
+
+    /**
+     * Maximum height for PNG images used in PDF, in inches.
+     * @parameter default-value="5" property="maxImageHeightInInches"
+     * @required
+     */
+    private int maxImageHeightInInches;
+
+    /**
+     * Get maximum height for PNG images used in PDF, in inches.
+     * @return Maximum height for PNG images used in PDF, in inches.
+     */
+    public int getMaxImageHeightInInches() {
+        return maxImageHeightInInches;
+    }
+
+    /**
      * Transform ImageData elements in the XML, generate PNG images from
      * <a href="http://plantuml.sourceforge.net/">PlantUML</a> text files,
      * and set DPI on PNGs.
@@ -47,27 +67,28 @@ public class PrepareSourcesMojo extends AbstractBuildMojo {
      * @throws MojoExecutionException Failed to transform an XML file or failed to set DPI on a PNG.
      */
     public void execute() throws MojoExecutionException {
-        if (!doUseGeneratedSources()) {
-            throw new MojoExecutionException("<useGeneratedSources> must"
-                    + " be set to true as preparing sources changes them.");
+
+        if (!doUseFilteredSources()) {
+            throw new MojoExecutionException("This version of the doc build"
+                    + " plugin requires that you use filtered sources.");
         }
 
-        // Are there already generated sources? If not, copy sources over.
-        final File generatedSourceDirectory = getDocbkxGeneratedSourceDirectory();
-        if (!generatedSourceDirectory.isDirectory()) {
-            final File sourceDir = getDocbkxSourceDirectory();
-            try {
-                FileUtils.copyDirectory(sourceDir, generatedSourceDirectory);
-            } catch (IOException ie) {
-                throw new MojoExecutionException("Failed to copy sources", ie);
-            }
+        if (getJCiteOutputDirectory().exists()) {
+            sourceDirectory = getJCiteOutputDirectory();
+        } else {
+            sourceDirectory = getFilteredDocbkxSourceDirectory();
+        }
+
+        if (sourceDirectory == null || !sourceDirectory.exists()) {
+            throw new MojoExecutionException("Cannot prepare sources.\n"
+                + "Source directory " + sourceDirectory + " is missing.");
         }
 
         // Update ImageData elements in generated sources.
         try {
 
             getLog().info("Transforming ImageData elements in XML files:");
-            for (File file : transformImageData(generatedSourceDirectory)) {
+            for (File file : transformImageData(sourceDirectory)) {
                 getLog().info("\t" + file.getPath());
             }
 
@@ -86,10 +107,10 @@ public class PrepareSourcesMojo extends AbstractBuildMojo {
 
             getLog().info("Setting DPI in the following PNG files:");
             for (File image : FileUtils.listFiles(
-                    generatedSourceDirectory,
+                    sourceDirectory,
                     new WildcardFileFilter("*.png"),
                     TrueFileFilter.INSTANCE)) {
-                PNGUtils.setDPI(image);
+                PNGUtils.setSafeDpi(image, maxImageHeightInInches);
                 getLog().info("\t" + image.getPath());
             }
 
@@ -129,7 +150,7 @@ public class PrepareSourcesMojo extends AbstractBuildMojo {
          */
         void runPlantUML() throws MojoExecutionException {
             final String directory = FilenameUtils.separatorsToUnix(
-                    getDocbkxGeneratedSourceDirectory().getPath());
+                    sourceDirectory.getPath());
 
             executeMojo(
                     plugin(

@@ -1,5 +1,3 @@
-#DRAFT 2.0.0 is currently in progress and not yet released
-
 # ForgeRock Documentation Tools 2.0.0 Release Notes
 
 ForgeRock Documentation Tools is a catch all for the doc build plugin,
@@ -13,6 +11,12 @@ fixes.
 ## Improvements & New Features
 
 **DOCS-35: Integrate support for text-based sequence diagram sources**
+
+Note that the version of PlantUML available for Maven
+at the time of this writing is 7940.
+Some PlantUML features, such as `<->` in sequence diagrams,
+require a more recent version of PlantUML.
+So you might want to continue to build some PNGs by hand.
 
 `forgerock-doc-maven-plugin` now lets you provide PlantUML text files
 instead of images. [PlantUML](http://plantuml.sourceforge.net/) is an
@@ -78,8 +82,6 @@ sources have been pre-processed:
 
 **DOCS-78: Include hyphen when splitting URL across lines**
 
-These are soft hyphens. Soft hyphens "disappear" when copy/pasted.
-
 If you have a `<link xlink:href="http://some/url">http://some/url</link>`,
 write it `<link xlink:href="http://some/url" />` instead.
 
@@ -102,7 +104,8 @@ This change spreads the label across the page.
 
 **DOCS-89: Simplify use of Maven properties in XML attribute values**
 
-The fix requires that you insert a new execution as the first `pre-site` goal:
+The fix requires that you insert a new execution `pre-site` goal
+after the goal to copy common content:
 
     <execution>
         <id>filter-sources</id>
@@ -111,6 +114,36 @@ The fix requires that you insert a new execution as the first `pre-site` goal:
             <goal>filter</goal>
         </goals>
     </execution>
+
+**DOCS-100: Decouple/isolate branding from the build plugin to make it easier to generate unbranded docs**
+
+The plugin now uses a branding module that lets you configure alternatives
+as in the following example, taken from the top-level plugin configuration.
+
+     <brandingGroupId>org.forgerock.commons</brandingGroupId>
+     <brandingArtifactId>forgerock-doc-default-branding</brandingArtifactId>
+     <brandingVersion>1.0.1</brandingVersion>
+
+If you need to create your own branding,
+consider the `forgerock-doc-default-branding` module as an example.
+
+**DOCS-102: Consider moving common content into a separate module**
+
+The plugin now uses a common content module that lets you configure alternatives
+as in the following example, showing the `boilerplate` execution configuration.
+
+     <execution>
+      <id>copy-common</id>
+      <phase>pre-site</phase>
+      <configuration>
+       <commonContentGroupId>org.forgerock.commons</commonContentGroupId>
+       <commonContentArtifactId>forgerock-doc-common-content</commonContentArtifactId>
+       <commonContentVersion>1.0.0</commonContentVersion>
+      </configuration>
+      <goals>
+       <goal>boilerplate</goal>
+      </goals>
+     </execution>
 
 **DOCS-105: Color link text in printable formats**
 
@@ -157,6 +190,9 @@ This lets you use a different `${project.build.directory}` than `target`.
 
 **DOCS-95: Do not set publication date on in-progress documentation**
 
+Having a publication date on in-progress documentation can be confusing.
+Publication date should be set only on release documentation.
+
 This is fixed in the doc build plugin, but requires changes to the product POM:
 
       <!--
@@ -172,9 +208,9 @@ This is fixed in the doc build plugin, but requires changes to the product POM:
 
 And to the top level document files, such as `index.xml`:
 
-      <date><?eval ${publicationDate}?></date>
-      <pubdate><?eval ${publicationDate}?></pubdate>
-      <releaseinfo><?eval ${softwareReleaseDate}?></releaseinfo>
+      <date>${publicationDate}</date>
+      <pubdate>${publicationDate}</pubdate>
+      <releaseinfo>${softwareReleaseDate}</releaseinfo>
 
 Once these are changed in the product docs and this version of the doc build
 plugin is used, the publication date only appears in output when set.
@@ -182,6 +218,10 @@ plugin is used, the publication date only appears in output when set.
 **DOCS-109: CC image not included in HTML legal notice page**
 
 **DOCS-110: Verbatim text renders too large in Opera**
+
+**DOCS-114: Table layout in HTML results in large tables being hard to read**
+
+**DOCS-121: Maven resource filtering should happen after common content is copied**
 
 ## Known Issues
 

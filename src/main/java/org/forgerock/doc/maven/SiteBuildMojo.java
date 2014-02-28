@@ -78,13 +78,15 @@ public class SiteBuildMojo extends AbstractBuildMojo {
 
         getLog().info("Add redirect to docs.html under layout directory...");
         try {
-            String redirect = IOUtils.toString(
-                    getClass().getResourceAsStream("/index.html"), "UTF-8");
-            redirect = redirect.replaceAll("PROJECT", getProjectName())
-                    .replaceAll("LOWERCASE", getProjectName().toLowerCase());
             File file = new File(getSiteDirectory().getPath() + File.separator
                     + "doc" + File.separator + "index.html");
-            FileUtils.write(file, redirect, "UTF-8");
+            if (!file.exists()) {
+                String redirect = IOUtils.toString(
+                        getClass().getResourceAsStream("/index.html"), "UTF-8");
+                redirect = redirect.replaceAll("PROJECT", getProjectName())
+                        .replaceAll("LOWERCASE", getProjectName().toLowerCase());
+                FileUtils.write(file, redirect, "UTF-8");
+            }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy redirect file: "
                     + e.getMessage());
@@ -121,17 +123,15 @@ public class SiteBuildMojo extends AbstractBuildMojo {
             List<String> formats = getOutputFormats();
 
             if (formats.contains("epub")) {
-                for (String docName : docNames) {
-                    String epubDir = FilenameUtils
-                            .separatorsToUnix(getDocbkxOutputDirectory()
-                                    .getPath())
-                            + "/epub/" + docName;
-                    r.add(element(
-                            name("resource"),
-                            element(name("directory"), epubDir),
-                            element(name("includes"),
-                                    element(name("include"), "**/*.epub"))));
-                }
+                String epubDir = FilenameUtils
+                        .separatorsToUnix(getDocbkxOutputDirectory()
+                                .getPath())
+                        + "/epub/";
+                r.add(element(
+                        name("resource"),
+                        element(name("directory"), epubDir),
+                        element(name("includes"),
+                                element(name("include"), "**/*.epub"))));
             }
 
             if (formats.contains("html")) {
@@ -198,8 +198,11 @@ public class SiteBuildMojo extends AbstractBuildMojo {
          */
         void testLinks() throws MojoExecutionException {
             String include = "**/" + getDocumentSrcName();
-            if (doUseGeneratedSources()) {
-                include = getDocbkxGeneratedSourceDirectory() + "/" + include;
+
+            if (getJCiteOutputDirectory().exists()) {
+                include = getJCiteOutputDirectory().getPath() + "/" + include;
+            } else if (doUseFilteredSources()) {
+                include = getFilteredDocbkxSourceDirectory().getPath() + "/" + include;
             }
 
             final String log = getDocbkxOutputDirectory().getPath() + File.separator

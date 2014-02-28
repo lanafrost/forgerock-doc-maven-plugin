@@ -3,7 +3,7 @@
 This Maven plugin centralizes configuration of core documentation, to ensure
 that documents are formatted uniformly.
 
-_This document covers functionality present in 2.0.0-SNAPSHOT._
+_This document covers functionality present in 2.0.0._
 
 With centralized configuration handled by this Maven plugin, the core
 documentation-related project configuration takes at least two arguments:
@@ -15,12 +15,13 @@ documentation-related project configuration takes at least two arguments:
 
 The project runs multiple plugin executions:
 
-1.  A `filter` goal for Maven resource filtering on source files
-2.  A `boilerplate` goal to copy common content
-3.  A `prepare` goal to prepare sources for the build
-4.  A `build` goal in the `pre-site` phase to build and massage output
-5.  A `layout` goal in the `site` phase to copy content under `site/doc`
-6.  A `release` goal to prepare site documentation for release
+1.  A `boilerplate` goal to copy common content
+2.  A `filter` goal for Maven resource filtering on source files
+3.  An optional `jcite` goal to cite Java source files
+4.  A `prepare` goal to prepare sources for the build
+5.  A `build` goal in the `pre-site` phase to build and massage output
+6.  A `layout` goal in the `site` phase to copy content under `site/doc`
+7.  A `release` goal to prepare site documentation for release
 
 ## Example Plugin Specification
 
@@ -40,6 +41,13 @@ POM property called `gaId`, whose value is the Google Analytics ID.
            </configuration>
            <executions>
             <execution>
+             <id>copy-common</id>
+             <phase>pre-site</phase>
+             <goals>
+              <goal>boilerplate</goal>
+             </goals>
+            </execution>
+            <execution>
              <id>filter-sources</id>
              <phase>pre-site</phase>
              <goals>
@@ -47,10 +55,10 @@ POM property called `gaId`, whose value is the Google Analytics ID.
              </goals>
             </execution>
             <execution>
-             <id>copy-common</id>
+             <id>run-jcite</id>
              <phase>pre-site</phase>
              <goals>
-              <goal>boilerplate</goal>
+              <goal>jcite</goal>
              </goals>
             </execution>
             <execution>
@@ -155,6 +163,27 @@ To avoid using common content, turn off the feature:
 
     <useSharedContent>false</useSharedContent> <!-- true by default -->
 
+If you want different shared content from the default,
+you can use a different version,
+or create your own Maven module for shared content,
+and include it in the configuration
+for the `<goal>boilerplate</goal>` execution.
+
+The following example shows the configuration to use the 1.0.0 version.
+
+     <execution>
+      <id>copy-common</id>
+      <phase>pre-site</phase>
+      <configuration>
+       <commonContentGroupId>org.forgerock.commons</commonContentGroupId>
+       <commonContentArtifactId>forgerock-doc-common-content</commonContentArtifactId>
+       <commonContentVersion>1.0.0</commonContentVersion>
+      </configuration>
+      <goals>
+       <goal>boilerplate</goal>
+      </goals>
+     </execution>
+
 ## PNG Image Manipulation
 
 Getting screenshots and other images to look okay in PDF can be a hassle.
@@ -244,6 +273,18 @@ The following command generates only PDF output for your single chapter.
     mvn -DdocumentSrcName=chap-one.xml -Dinclude=pdf clean pre-site
 
 Formats include `epub`, `html`, `man`, `pdf`, and `rtf`.
+
+## Alternate Branding
+
+The plugin uses a branding module that lets you configure alternatives
+as in the following example, taken from the top-level plugin configuration.
+
+     <brandingGroupId>org.forgerock.commons</brandingGroupId>
+     <brandingArtifactId>forgerock-doc-default-branding</brandingArtifactId>
+     <brandingVersion>1.0.1</brandingVersion>
+
+If you need to create your own branding,
+consider the `forgerock-doc-default-branding` module as an example.
 
 ## Expected Results
 

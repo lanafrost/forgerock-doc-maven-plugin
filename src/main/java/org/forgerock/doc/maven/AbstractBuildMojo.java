@@ -8,7 +8,7 @@
  * information:
  *     Portions Copyright [yyyy] [name of copyright owner]
  *
- *     Copyright 2012-2013 ForgeRock AS
+ *     Copyright 2012-2014 ForgeRock AS
  *
  */
 
@@ -35,7 +35,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Docbkx Tools plugin version to use. Executions seem to hit an NPE when
      * the version is not specified.
      *
-     * @parameter default-value="2.0.14" property="docbkxVersion"
+     * @parameter default-value="2.0.15" property="docbkxVersion"
      * @required
      */
     private String docbkxVersion;
@@ -139,7 +139,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * Base directory for processed DocBook XML source files, relative to the
      * build directory.
      *
-     * @parameter default-value="generated-docbkx"
+     * @parameter default-value="docbkx-generated"
      * property="docbkxGeneratedSourceDirectory"
      * @required
      */
@@ -186,6 +186,16 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * @required
      */
     private File buildDirectory;
+
+    /**
+     * When running JCite, the output directory for processed files, relative
+     * to the build directory.
+     *
+     * @parameter default-value="docbkx-jcite"
+     * property="jCiteOutputDirectory"
+     * @required
+     */
+    private String jCiteOutputDirectory;
 
     /**
      * The Maven Project Object.
@@ -302,7 +312,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
     /**
      * Version of the branding artifact to use.
      *
-     * @parameter default-value="1.0.1" property="brandingVersion"
+     * @parameter default-value="2.0.1-SNAPSHOT" property="brandingVersion"
      * @required
      */
     private String brandingVersion;
@@ -427,7 +437,7 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      * @return {@link #filteredDocbkxSourceDirectory}
      */
     public File getFilteredDocbkxSourceDirectory() {
-        return new File(getBuildDirectory(), filteredDocbkxSourceDirectory);
+        return new File(buildDirectory, filteredDocbkxSourceDirectory);
     }
 
     /**
@@ -465,6 +475,15 @@ abstract class AbstractBuildMojo extends AbstractMojo {
      */
     public File getDocbkxOutputDirectory() {
         return new File(buildDirectory, docbkxOutputDirectory);
+    }
+
+    /**
+     * JCite output directory, relative to the build directory.
+     *
+     * @return {@link #jCiteOutputDirectory}
+     */
+    public File getJCiteOutputDirectory() {
+        return new File(buildDirectory, jCiteOutputDirectory);
     }
 
     /**
